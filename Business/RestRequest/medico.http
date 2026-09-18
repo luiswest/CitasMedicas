@@ -13,24 +13,24 @@ Content-Type: application/json
 
  {
     "especialidad_id": 1,
-    "nombre_completo": "Lulehiska West Cooper",
-    "licencia": "LIC-123455",
+    "nombre_completo": "Maikol West Grant",
+    "licencia": "LIC-123450",
     "telefono": "8888-7771",
-    "username": "luluwest",
+    "username": "maikwest",
     "password": "securepassword"
   }
 ###
 
-PUT {{uri}}/6
+PUT {{uri}}/3
 #Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
-    "nombre_completo": "Wilfred West Grant",
-    "telefono": "8888-7772"
+    "nombre_completo": "Armando West Grant",
+    "telefono": "8686-5555"
   }
 ###
-DELETE {{uri}}/1
+DELETE {{uri}}/6
 ###
 
 GET {{uri}}/filter/0/10?nombre=lu&cedula=&especialidad=car

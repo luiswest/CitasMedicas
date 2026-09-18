@@ -6,24 +6,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Medico extends Model
+class PacienteModel extends Model
 {
-    protected $table = 'medicos';
+    protected $table = 'pacientes';
 
     public $timestamps = false;
 
     protected $fillable = [
         'usuario_id',
-        'especialidad_id',
+        'cedula',
         'nombre_completo',
-        'licencia',
+        'fecha_nacimiento',
         'telefono',
     ];
 
     protected $casts = [
         'id' => 'integer',
-        'usuario_id' => 'integer',
-        'especialidad_id' => 'integer'
+        'usuario_id' => 'integer'
     ];
 
     public function usuario()

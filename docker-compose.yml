@@ -24,8 +24,20 @@ services:
       dockerfile: ./Data/Dockerfile
     ports:
       - 8080:80
-    secrets:
-      - db_password
+    depends_on:
+      - db
+  webnegocio:
+    container_name: web_negocio
+    volumes:
+      - ./Business/public:/var/www/html/public
+      - ./Business/src:/var/www/html/src
+    build:
+      context: .
+      dockerfile: ./Business/Dockerfile
+    ports:
+      - 9090:80
+    depends_on:
+      - webdatos
 secrets:
   db_password:
     file: ./db_password.txt
