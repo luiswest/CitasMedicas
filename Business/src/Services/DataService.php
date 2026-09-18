@@ -18,24 +18,27 @@ final class DataService {
             ]
         ]);
     }
-    public function get(string $path, array $query = []) {
+    public function get(string $path, array $query = []): ResponseInterface {
         return $this->client->request('GET', ltrim($path, '/'),
             ['query' => $query]);
     }
-
-    public function post(string $path, string $body) {
+ /*    public function filter(string $path, array $query = []) {
+        return $this->client->request('GET', ltrim($path, '/'),
+            ['query' => $query]);
+    } */
+    public function post(string $path, string $body): ResponseInterface {
         return $this->client->request('POST', ltrim($path, '/'),
             ['body' => $body,
              'headers' => ['Content-Type' => 'application/json']
              ]);
     }
-    public function put(string $path, string $body) {
+    public function put(string $path, string $body): ResponseInterface {
         return $this->client->request('PUT', ltrim($path, '/'),
             ['body' => $body,
              'headers' => ['Content-Type' => 'application/json']
              ]);
     }
-    public function delete(string $path) {
+    public function delete(string $path): ResponseInterface {
         return $this->client->request('DELETE', ltrim($path, '/'));
     }
 }

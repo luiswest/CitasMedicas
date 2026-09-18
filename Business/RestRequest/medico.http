@@ -33,5 +33,5 @@ Content-Type: application/json
 DELETE {{uri}}/6
 ###
 
-GET {{uri}}/filter/0/10?nombre=lu&cedula=&especialidad=car
+GET {{uri}}/filter/0/10?nombre=&cedula=&especialidad=
 #Authorization: Bearer {{token}} 
