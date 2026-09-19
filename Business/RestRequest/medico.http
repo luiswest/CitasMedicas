@@ -13,7 +13,7 @@ Content-Type: application/json
 
  {
     "especialidad_id": 1,
-    "nombre_completo": "Maikol West Grant",
+    "nombre_completo": "Maikol West G",
     "licencia": "LIC-123450",
     "telefono": "8888-7771",
     "username": "maikwest",
@@ -33,5 +33,5 @@ Content-Type: application/json
 DELETE {{uri}}/6
 ###
 
-GET {{uri}}/filter/0/10?nombre=lu&cedula=&especialidad=car
+GET {{uri}}/filter/0/10?nombre=lu&cedula=&especialidad=
 #Authorization: Bearer {{token}} 
