@@ -58,6 +58,7 @@ class Medico {
             $body = (string) $request->getBody();
 
             $data = json_decode($body, true);
+
             if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
                 return $this->json($response, ['errors' => ['body' => 'Debe enviar un objeto JSON válido']]);
             }
@@ -68,6 +69,7 @@ class Medico {
             }
 
             $dataService = $this->container->get(DataService::class);
+            
             $upstream = $dataService->post('medicos', json_encode($data, JSON_THROW_ON_ERROR));
             return $this->json($response, json_decode((string) $upstream->getBody(), true),
                 $upstream->getStatusCode() );

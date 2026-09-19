@@ -13,10 +13,10 @@ Content-Type: application/json
 
  {
     "especialidad_id": 1,
-    "nombre_completo": "Maikol West Grant",
+    "nombre_completo": "Maikol West Gr",
     "licencia": "LIC-123450",
-    "telefono": "3333-4444",
-    "username": "maikwest",
+    "telefono": "",
+    "username": "maikwes1",
     "password": "secure1D#"
   }
 ###
