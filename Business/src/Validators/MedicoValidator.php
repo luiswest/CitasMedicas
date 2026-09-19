@@ -25,8 +25,8 @@ final class MedicoValidator {
                 'mensaje' => 'La licencia es obligatoria y debe tener entre 1 y 50 caracteres.',
             ],
             'username' => [
-                'regla' => v::stringType()->notBlank()->length(v::between(1, 50))->regex('/^[a-z]{8,16}$/'),
-                'mensaje' => 'El username debe tener entre 8 y 16 caracteres y solo letras minúsculas, sin espacios.',
+                'regla' => v::stringType()->notBlank()->length(v::between(8, 16))->regex('/^[a-z0-9]{8,16}$/'),
+                'mensaje' => 'El username debe tener entre 8 y 16 caracteres y solo letras minúsculas y números, sin espacios.',
             ],
             'password' => [
                 'regla' => v::stringType()
@@ -50,7 +50,7 @@ final class MedicoValidator {
             $regla = $config['regla'];
             $mensaje = $config['mensaje'];
 
-            if (!$regla->validate($valor)->isValid()) {
+            if ($regla->validate($valor)->hasFailed()) {
                 $errores[$campo] = $mensaje;
             }
         }
