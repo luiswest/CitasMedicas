@@ -37,7 +37,24 @@ class Medico {
         try {
             $dataService = $this->container->get(DataService::class);
             $path = 'medicos/filter/' . rawurlencode($args['offset']) . '/' . rawurlencode($args['limit']);
+<<<<<<< HEAD
             $upstream = $dataService->get($path, $request->getQueryParams());
+=======
+
+            $upstream = $dataService->get($path, $request->getQueryParams());
+            $response->getBody()->write((string) $upstream->getBody());
+            return $response
+                ->withHeader(
+                    'Content-Type', $upstream->getHeaderLine('Content-Type') ?: 'application/json; charset=utf-8')
+                ->withStatus($upstream->getStatusCode());
+        } catch (ConnectException){
+            return $this->json($response, ['error' => 'El servicio de datos no está disponible'], 502);
+        }
+        catch (RequestException){
+            return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos'], 502);
+        }     
+    }
+>>>>>>> 6bd8db087613ce19928f06f8f43a0af102f313c0
 
             return $this->json($response, json_decode((string) $upstream->getBody(), true), $upstream->getStatusCode());
         } catch (ConnectException) {
