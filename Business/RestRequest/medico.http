@@ -1,10 +1,9 @@
 @host = http://localhost:9090/api
 @uri = {{host}}/medicos
-#@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsb2NhbGhvc3QiLCJpYXQiOjE3Nzg0MzE2NjQsImV4cCI6MTc3ODQzMzQ2NCwic3ViIjoiNy0xMjM0LTU2NzgiLCJyb2wiOjMsIm5vbSI6Ikx1aXMgV2VzdCJ9.kPq1MSyAXEKDX9hfJRc_9SmJqexUI08fBDolaQfwH7E
+@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkwMzEwNDY5LCJleHAiOjE3OTAzMTA1MTQsInN1YiI6IjIwIiwidXNlcm5hbWUiOiJtYWlrd2VzMSIsInJvbF9pZCI6Mn0.-VFyrh9_tN8bJ84LRKLdk8C4rmh_JiMjyPrmwDDol4w
 
 GET {{uri}}
-
-#Authorization: Bearer {{token}}
+Authorization: Bearer {{token}}
 ###
 
 POST {{uri}}
@@ -14,7 +13,7 @@ Content-Type: application/json
  {
     "especialidad_id": 1,
     "nombre_completo": "Maikol West Gr",
-    "licencia": "LIC-123450",
+    "licencia": "LIC-1234501",
     "telefono": "",
     "username": "maikwes1",
     "password": "secure1D#"
@@ -35,3 +34,12 @@ DELETE {{uri}}/6
 
 GET {{uri}}/filter/0/10?nombre=&cedula=&especialidad=
 #Authorization: Bearer {{token}} 
+###
+
+POST http://localhost:9090/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "maikwes1",
+    "password": "secure1D#"
+}
