@@ -21,13 +21,13 @@ Content-Type: application/json
   }
 ###
 
-PUT {{uri}}/6
+PUT {{uri}}/7
 #Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
     "nombre_completo": "Wilfred West Grant",
-    "telefono": "8888-7772"
+    "telefono": "8888-7775j"
   }
 ###
 DELETE {{uri}}/1

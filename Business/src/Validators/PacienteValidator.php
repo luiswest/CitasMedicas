@@ -6,12 +6,14 @@ namespace App\Validators;
 use Respect\Validation\ValidatorBuilder as v;
 use Respect\Validation\Exceptions\ValidationException;
 
-final class MedicoValidator {
+final class PacienteValidator {
     private function reglas(): array {
         return [
-            'especialidad_id' => [
-                'regla' => v::intType()->positive(),
-                'mensaje' => 'Debe seleccionar una especialidad válida.',
+            'cedula' => [
+                'regla' => v::stringType()
+                    ->notBlank()
+                    ->regex('/^(?:[1-9][0-9]{8}|5[0-9]{11})$/'),
+                'mensaje' => 'La cédula es obligatoria y debe tener 9 caracteres numéricos ó dimex de 12 dígitos iniciando con 5.',
             ],
             'nombre_completo' => [
                 'regla' => v::stringType()
@@ -20,15 +22,15 @@ final class MedicoValidator {
                     ->regex('/^[A-Za-zÑñÁÉÍÓÚáéíóú]{2,}(?: [A-Za-zÑñÁÉÍÓÚáéíóú]{2,}){1,3}$/u'),
                 'mensaje' => 'El nombre completo es obligatorio y debe tener entre 11 y 150 caracteres, solo letras y espacios.',
             ],
-            'licencia' => [
-                'regla' => v::stringType()->notBlank()->length(v::between(1, 50)),
-                'mensaje' => 'La licencia es obligatoria y debe tener entre 1 y 50 caracteres.',
+            'fecha_nacimiento' => [
+                'regla' => v::date()->notBlank(),
+                'mensaje' => 'La fecha de nacimiento es obligatoria y debe tener un formato válido.',
             ],
             'username' => [
                 'regla' => v::stringType()
                 ->notBlank()
                 ->length(v::between(8, 16))
-                ->regex('/^[a-z0-9]{8,64}$/'),
+                ->regex('/^[a-z0-9]{8,16}$/'),
                 'mensaje' => 'El username debe tener entre 8 y 16 caracteres y solo letras minúsculas y números, sin espacios.',
             ],
             'password' => [
@@ -39,7 +41,9 @@ final class MedicoValidator {
                 'mensaje' => 'La contraseña debe tener entre 8 y 16 caracteres, incluir mayúscula, minúscula, número y un símbolo especial.',
             ],
             'telefono' => [
-                'regla' => v::stringType()->regex('/^[2-9][0-9]{3}-[0-9 ]{4}$/')->length(v::equals(9)),
+                'regla' => v::stringType()
+                    ->regex('/^[2-9][0-9]{3}-[0-9 ]{4}$/')
+                    ->length(v::equals(9)),
                 'mensaje' => 'El teléfono debe tener el formato 0000-0000 y 9 caracteres.',
             ],
         ];

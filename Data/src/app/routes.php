@@ -17,6 +17,7 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
 });
 
 $app->group('/api', function(RouteCollectorProxy $api) {
+    $api->post('/auth/credentials', Auth::class . ':credentials');    
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');
         $endpoint->get('/filter/{offset}/{limit}', Medico::class . ':filter');
