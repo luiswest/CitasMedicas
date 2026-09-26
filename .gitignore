@@ -1,2 +1,4 @@
 mysql/
-Business/vendor/
+
+**/vendor/
+**/RestRequest/
