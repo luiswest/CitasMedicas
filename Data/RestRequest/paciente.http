@@ -13,21 +13,22 @@ Content-Type: application/json
 
  {
     "nombre_completo": "Lulehiska West Cooper",
-    "cedula": "77777777",
+    "cedula": "5555555",
     "telefono": "8888-7771",
     "fecha_nacimiento" : "2000-09-21",
-    "username": "vanesaWest",
+    "username": "luluWest",
     "password": "securepassword"
   }
 ###
 
-PUT {{uri}}/7
+PUT {{uri}}/1
 #Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
-    "nombre_completo": "Luis Aramando West Grant",
-    "telefono": "8888-7772"
+    "nombre_completo": "Lulehiska Vanessa West Cooper",
+    "telefono": "8888-7772",
+    "fecha_nacimiento" : "2000-04-15"
   }
 ###
 DELETE {{uri}}/1

@@ -17,7 +17,11 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
 });
 
 $app->group('/api', function(RouteCollectorProxy $api) {
+<<<<<<< HEAD
     $api->post('/auth/credentials', Auth::class . ':credentials');
+=======
+    $api->post('/auth/credentials', Auth::class . ':credentials');    
+>>>>>>> ec2f9202a6c9cd62782ed551bde4c391c86edd7e
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');
         $endpoint->get('/filter/{offset}/{limit}', Medico::class . ':filter');

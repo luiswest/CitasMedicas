@@ -35,6 +35,10 @@ final class Auth
                 'username' => $username,
                 'password' => $password,
             ], JSON_THROW_ON_ERROR));
+<<<<<<< HEAD
+=======
+            
+>>>>>>> ec2f9202a6c9cd62782ed551bde4c391c86edd7e
             $credentials = json_decode((string) $upstream->getBody(), true);
 
             if ($upstream->getStatusCode() !== 200 || !is_array($credentials)) {
@@ -48,7 +52,11 @@ final class Auth
             $payload = [
                 'iss' => 'citas-medicas-business',
                 'iat' => $now,
+<<<<<<< HEAD
                 'exp' => $now + 45, //$config->jwt_ttl,
+=======
+                'exp' => $now + $config->jwt_ttl,
+>>>>>>> ec2f9202a6c9cd62782ed551bde4c391c86edd7e
                 'sub' => (string) $credentials['id'],
                 'username' => $credentials['username'],
                 'rol_id' => (int) $credentials['rol_id'],

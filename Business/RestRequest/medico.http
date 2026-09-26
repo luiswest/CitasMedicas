@@ -1,21 +1,21 @@
 @host = http://localhost:9090/api
 @uri = {{host}}/medicos
-@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkwMzEwNDY5LCJleHAiOjE3OTAzMTA1MTQsInN1YiI6IjIwIiwidXNlcm5hbWUiOiJtYWlrd2VzMSIsInJvbF9pZCI6Mn0.-VFyrh9_tN8bJ84LRKLdk8C4rmh_JiMjyPrmwDDol4w
+@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkwMzUyMjU4LCJleHAiOjE3OTAzNTIzMDMsInN1YiI6IjEwIiwidXNlcm5hbWUiOiJtYWlrd2VzdCIsInJvbF9pZCI6Mn0.MkHuQHcpGeVESVx1h5iXjZLR2nyN2WcI6ByCeor6RlQ
 
 GET {{uri}}
 Authorization: Bearer {{token}}
 ###
 
 POST {{uri}}
-#Authorization: Bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
     "especialidad_id": 1,
-    "nombre_completo": "Maikol West Gr",
-    "licencia": "LIC-1234501",
-    "telefono": "",
-    "username": "maikwes1",
+    "nombre_completo": "1Maikol West Gr",
+    "licencia": "LIC-123450",
+    "telefono": "8888-7771",
+    "username": "maikwest",
     "password": "secure1D#"
   }
 ###
@@ -40,6 +40,11 @@ POST http://localhost:9090/api/auth/login
 Content-Type: application/json
 
 {
+<<<<<<< HEAD
     "username": "maikwes1",
+=======
+  
+    "username": "maikwest",
+>>>>>>> ec2f9202a6c9cd62782ed551bde4c391c86edd7e
     "password": "secure1D#"
 }

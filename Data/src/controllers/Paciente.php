@@ -175,6 +175,8 @@ class Paciente {
 
             $data = $request->getParsedBody();
             $data = is_array($data) ? $data : [];
+/*             var_dump($data); // Debugging line to inspect the parsed body data
+            die(); // Stop execution for debugging purposes */
 
             if (isset($data['nombre_completo'])) {
                 $fullName = trim((string) $data['nombre_completo']);
@@ -182,6 +184,20 @@ class Paciente {
                     return $this->json($response, ['error' => 'Nombre completo inválido.'], 422);
                 }
                 $paciente->nombre_completo = $fullName;
+            }
+            if (isset($data['telefono'])) {
+                $phone = trim((string) $data['telefono']);
+                if ($phone !== '' && mb_strlen($phone) > 20) {
+                    return $this->json($response, ['error' => 'Teléfono inválido.'], 422);
+                }
+                $paciente->telefono = $phone !== '' ? $phone : null;
+            }
+            if (isset($data['fecha_nacimiento'])) {
+                $birth_date = trim((string) $data['fecha_nacimiento']);
+                if ($birth_date === '' || !\DateTime::createFromFormat('Y-m-d', $birth_date)) {
+                    return $this->json($response, ['error' => 'Fecha de nacimiento inválida.'], 422);
+                }
+                $paciente->fecha_nacimiento = $birth_date;
             }
 
             $paciente->save();

@@ -227,7 +227,6 @@ class Medico {
     }
 
     public function delete(Request $request, Response $response, array $args): Response {
-        // Implementation for deleting a Medico record would go here.
         $eloquent = $this->container->get('eloquent');
         if (isset($args['id'])) {
             $medico = MedicoModel::find($args['id']);

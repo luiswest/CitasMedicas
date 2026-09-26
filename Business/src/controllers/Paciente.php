@@ -7,17 +7,17 @@ use Psr\Container\ContainerInterface;
 use App\Services\DataService;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
-use App\Validators\MedicoValidator;
+use App\Validators\PacienteValidator;
 
 
-class Medico {
+class Paciente {
 
     public function __construct(private ContainerInterface $container) {}
 
     public function read(Request $request, Response $response, array $args): Response {
         try {
             $dataService = $this->container->get(DataService::class);
-            $path = isset($args['id']) ? 'medicos/' . rawurlencode($args['id']) : 'medicos';
+            $path = isset($args['id']) ? 'pacientes/' . rawurlencode($args['id']) : 'pacientes';
 
             $upstream = $dataService->get($path);
             $response->getBody()->write((string) $upstream->getBody());
@@ -36,7 +36,7 @@ class Medico {
     public function filter(Request $request, Response $response, array $args): Response {
         try {
             $dataService = $this->container->get(DataService::class);
-            $path = 'medicos/filter/' . rawurlencode($args['offset']) . '/' . rawurlencode($args['limit']);
+            $path = 'pacientes/filter/' . rawurlencode($args['offset']) . '/' . rawurlencode($args['limit']);
 
             $upstream = $dataService->get($path, $request->getQueryParams());
             $response->getBody()->write((string) $upstream->getBody());
@@ -58,17 +58,17 @@ class Medico {
             $body = (string) $request->getBody();
 
             $data = json_decode($body, true);
-
             if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
                 return $this->json($response, ['errors' => ['body' => 'Debe enviar un objeto JSON válido']]);
             }
-            $errors = (new MedicoValidator())->validate($data);
+
+            $errors = (new PacienteValidator())->validate($data);
             if ($errors !== []) {
                 return $this->json($response, ['errors' => $errors], 422);
             }
+
             $dataService = $this->container->get(DataService::class);
-            
-            $upstream = $dataService->post('medicos', json_encode($data, JSON_THROW_ON_ERROR));
+            $upstream = $dataService->post('pacientes', json_encode($data, JSON_THROW_ON_ERROR));
             return $this->json($response, json_decode((string) $upstream->getBody(), true),
                 $upstream->getStatusCode() );
 
@@ -84,7 +84,8 @@ class Medico {
         try {
             $dataService = $this->container->get(DataService::class);
             $body = (string) $request->getBody();
-            $upstream = $dataService->put('medicos/' . rawurlencode($args['id']), $body);
+            $upstream = $dataService->put('pacientes/' . rawurlencode($args['id']), $body);
+
 
             return $this->json($response, json_decode((string) $upstream->getBody(), true),
                 $upstream->getStatusCode() );
@@ -101,7 +102,7 @@ class Medico {
         try {
             $dataService = $this->container->get(DataService::class);
             
-            $upstream = $dataService->delete('medicos/' . rawurlencode($args['id']));
+            $upstream = $dataService->delete('pacientes/' . rawurlencode($args['id']));
 
             return $this->json($response, json_decode((string) $upstream->getBody(), true),
                 $upstream->getStatusCode() );
