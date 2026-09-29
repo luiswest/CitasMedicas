@@ -21,6 +21,7 @@ $app->group('/api', function(RouteCollectorProxy $api) {
     });
     $api->group('/citas', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('/paciente[/{id}]', Citas::class . ':read');
+        $endpoint->get('/medico[/{id}]', Citas::class . ':read');
         $endpoint->post('', Citas::class . ':create');
     });
 });

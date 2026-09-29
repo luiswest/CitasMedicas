@@ -2,7 +2,7 @@
 @uri = {{host}}/pacientes
 #@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsb2NhbGhvc3QiLCJpYXQiOjE3Nzg0MzE2NjQsImV4cCI6MTc3ODQzMzQ2NCwic3ViIjoiNy0xMjM0LTU2NzgiLCJyb2wiOjMsIm5vbSI6Ikx1aXMgV2VzdCJ9.kPq1MSyAXEKDX9hfJRc_9SmJqexUI08fBDolaQfwH7E
 
-GET {{uri}}
+GET {{uri}}/1
 
 #Authorization: Bearer {{token}}
 ###

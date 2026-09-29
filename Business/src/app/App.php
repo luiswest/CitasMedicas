@@ -48,7 +48,7 @@ $app->add(new JwtAuthentication(
 	new FirebaseDecoder(new Secret($_ENV['KEY'], 'HS256')),
 	[new RequestPathRule(
         ['/'], 
-        ['/api/auth/login'])]
+        ['/api/auth/login', '/api/medicos'])]
 ));
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);

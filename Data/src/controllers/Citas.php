@@ -82,8 +82,8 @@ class Citas
             'CALL sp_obtener_citas_paciente(?)',
             [$patientId]
         );
-
-        return $this->json($response, ['data' => $citas], 200);
+        $status = sizeOf($citas) > 0 ? 200 : 404;
+        return $this->json($response, ['data' => $citas], $status);
     }
 
     private function json(Response $response, array $payload, int $status): Response
