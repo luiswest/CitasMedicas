@@ -107,7 +107,7 @@ CREATE PROCEDURE sp_obtener_citas_medico(
 BEGIN
     SELECT c.id, c.fecha_hora, c.estado, c.motivo, p.nombre_completo AS paciente
     FROM citas c
-    INNER JOIN pacientes p ON p.paciente_id = p.id
+    INNER JOIN pacientes p ON c.paciente_id = p.id
     WHERE c.medico_id = m_medico_id
     ORDER BY c.fecha_hora DESC;
 END //

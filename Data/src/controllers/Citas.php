@@ -70,7 +70,7 @@ class Citas
         return $this->json($response, ['message' => $message], 201);
     }
 
-    public function read(Request $request, Response $response, array $args): Response
+    public function readPaciente(Request $request, Response $response, array $args): Response
     {
         $patientId = filter_var($args['id'] ?? $request->getQueryParams()['paciente_id'] ?? null, FILTER_VALIDATE_INT);
         if ($patientId === false || $patientId < 1) {
@@ -85,7 +85,21 @@ class Citas
         $status = sizeOf($citas) > 0 ? 200 : 404;
         return $this->json($response, ['data' => $citas], $status);
     }
+    public function readMedico(Request $request, Response $response, array $args): Response
+    {
+        $doctorId = filter_var($args['id'] ?? $request->getQueryParams()['medico_id'] ?? null, FILTER_VALIDATE_INT);
+        if ($doctorId === false || $doctorId < 1) {
+            return $this->json($response, ['error' => 'medico_id debe ser un entero positivo.'], 422);
+        }
 
+        $eloquent = $this->container->get('eloquent');
+        $citas = $eloquent->connection()->select(
+            'CALL sp_obtener_citas_medico(?)',
+            [$doctorId]
+        );
+        $status = sizeOf($citas) > 0 ? 200 : 404;
+        return $this->json($response, ['data' => $citas], $status);
+    }
     private function json(Response $response, array $payload, int $status): Response
     {
         $response->getBody()->write(json_encode(

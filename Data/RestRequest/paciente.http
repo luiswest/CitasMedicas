@@ -12,11 +12,11 @@ POST {{uri}}
 Content-Type: application/json
 
  {
-    "nombre_completo": "Lulehiska West Cooper",
-    "cedula": "5555555",
+    "nombre_completo": "María Cooper Suazo",
+    "cedula": "55555556",
     "telefono": "8888-7771",
     "fecha_nacimiento" : "2000-09-21",
-    "username": "luluWest",
+    "username": "mariaCooper",
     "password": "securepassword"
   }
 ###

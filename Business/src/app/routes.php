@@ -20,8 +20,8 @@ $app->group('/api', function(RouteCollectorProxy $api) {
         $endpoint->delete('/{id}', Paciente::class . ':delete');
     });
     $api->group('/citas', function(RouteCollectorProxy $endpoint) {
-        $endpoint->get('/paciente[/{id}]', Citas::class . ':read');
-        $endpoint->get('/medico[/{id}]', Citas::class . ':read');
+        $endpoint->get('/paciente/{id}', Citas::class . ':readPaciente');
+        $endpoint->get('/medico/{id}', Citas::class . ':readMedico');
         $endpoint->post('', Citas::class . ':create');
     });
 });

@@ -1,8 +1,12 @@
 @host = http://localhost:9090/api
 @uri = {{host}}/citas
-@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkwNjk3MTkzLCJleHAiOjE3OTA3MDA3OTMsInN1YiI6IjIxIiwidXNlcm5hbWUiOiJsdWlzd2VzdDEiLCJyb2xfaWQiOjJ9.zwAwFqzISO0OlZX30jdUw0x0JyloBxH7X1xthnmDmWg
+@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkwNzEzNDI5LCJleHAiOjE3OTA3MTcwMjksInN1YiI6IjEiLCJ1c2VybmFtZSI6Imx1bHV3ZXN0Iiwicm9sX2lkIjoyfQ.rB_Y4bycZyBZ82BfSMSrRhLQeapf4RK7f2iG6mF5rv4
 
-GET {{uri}}/paciente
+GET {{uri}}/paciente/1
+Authorization: Bearer {{token}}
+###
+
+GET {{uri}}/medico/1
 Authorization: Bearer {{token}}
 ###
 
@@ -18,17 +22,3 @@ Content-Type: application/json
   }
 ###
 
-PUT {{uri}}/7
-#Authorization: Bearer {{token}}
-Content-Type: application/json
-
- {
-    "nombre_completo": "Luis Aramando West Grant",
-    "telefono": "8888-7772"
-  }
-###
-DELETE {{uri}}/1
-###
-
-GET {{uri}}/filter/0/10?nombre=lu&cedula=&especialidad=car
-#Authorization: Bearer {{token}} 

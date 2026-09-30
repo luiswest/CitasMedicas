@@ -40,7 +40,6 @@ POST http://localhost:9090/api/auth/login
 Content-Type: application/json
 
 {
-  
-    "username": "luiswest1",
-    "password": "secure1D#"
+    "username": "luluwest",
+    "password": "securepassword"
 }
