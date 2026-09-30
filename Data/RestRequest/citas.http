@@ -18,7 +18,7 @@ POST {{uri}}
 Content-Type: application/json
 
  {
-    "paciente_id": 3,
+    "paciente_id": 1,
     "medico_id": 1,
     "fecha_hora": "2026-10-15 11:00:00",
     "motivo" : "Consulta de dolor de panza"
