@@ -36,5 +36,9 @@ $app->group('/api', function(RouteCollectorProxy $api) {
         $endpoint->get('/paciente/{id}', Citas::class . ':readPaciente');
         $endpoint->get('/medico/{id}', Citas::class . ':readMedico');
         $endpoint->post('', Citas::class . ':create');
+        $endpoint->put('/{id}', Citas::class . ':update'); //modificar cita: fecha/hora, doctor, paciente
+        $endpoint->patch('/cancel/{id}', Citas::class . ':cancel'); //cancelar cita
+        $endpoint->patch('/estado/{id}', Citas::class . ':updateEstado'); //actualizar estado de la cita
+        $endpoint->delete('/{id}', Citas::class . ':delete');
     });
 });
