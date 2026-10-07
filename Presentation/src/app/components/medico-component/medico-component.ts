@@ -13,6 +13,7 @@ import { MedicoModel } from '../../shared/models/medico-model';
   templateUrl: './medico-component.html',
 })
 export class MedicoComponent implements OnInit {
+  filtro : { nombre: string; cedula: string; especialidad: string } = { nombre: '', cedula: '', especialidad: '' };
   displayedColumns: string[] = [
     'id',
     'nombre_completo',
@@ -29,13 +30,19 @@ export class MedicoComponent implements OnInit {
     effect(() => {
       const respuesta = this.srvMedico.medicos.value();
       if (respuesta !== undefined) {
-        console.log(respuesta.data);
+       // console.log(respuesta.data);
         this.dataSource.set(respuesta.data);
       }
     });
   }
-
+  private resetearFiltro() {
+    this.filtro = { nombre: '', cedula: '', especialidad: '' };
+    this.filtrarMedicos();
+  }
+  private filtrarMedicos() {
+    this.srvMedico.filtrar(this.filtro);
+  }
   ngOnInit(): void {
-    this.srvMedico.filtrar({ nombre: '', cedula: '', especialidad: '' });
+    this.resetearFiltro();
   }
 }
