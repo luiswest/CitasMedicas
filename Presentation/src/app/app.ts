@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { MedicoComponent } from './components/medico-component/medico-component';
 import { FrmMedico } from './components/forms/frm-medico/frm-medico';
+import { MedicoComponent } from './components/medico-component/medico-component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, MedicoComponent, FrmMedico],
+  imports: [RouterOutlet, FrmMedico, MedicoComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
