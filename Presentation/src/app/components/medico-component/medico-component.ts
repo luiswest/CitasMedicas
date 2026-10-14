@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MedicoService } from '../../shared/services/medico-service';
-import { MedicoModel } from '../../shared/models/medico-model';
+import { MedicoCreateInput, MedicoModel } from '../../shared/models/medico-model';
 import { FrmMedico } from '../forms/frm-medico/frm-medico';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 
@@ -48,7 +48,7 @@ export class MedicoComponent implements OnInit {
   }
 
   public mostrarDialogo(titulo: string, datos? : MedicoModel, info? : boolean) {
-    const dialogRef = this.dialog.open(FrmMedico, {
+    const dialogRef = this.dialog.open<FrmMedico, unknown, MedicoCreateInput | undefined>(FrmMedico, {
       width: '50vw',
       maxWidth: '35rem',
       data: {
@@ -58,13 +58,14 @@ export class MedicoComponent implements OnInit {
       },
       disableClose : true
     });
-    dialogRef.afterClosed()
-      .subscribe({
-        complete: () => {
-          console.log('Dialogo cerrado');
-          //this.resetFiltro();
-        }
-      });
+    dialogRef.afterClosed().subscribe((medicoCreado) => {
+      if (medicoCreado === undefined) {
+        return;
+      }
+
+      console.log('Médico recibido del formulario:', medicoCreado);
+      // Aquí puedes llamar al servicio para guardar el médico en la API.
+    });
 
   } //Fin de mostrarDialogo  
   onCreate() {

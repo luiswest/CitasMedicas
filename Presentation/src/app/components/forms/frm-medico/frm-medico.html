@@ -56,5 +56,5 @@
 <mat-divider class="border-2"></mat-divider>
 <mat-dialog-actions align="end">
   <button mat-button type="button" [mat-dialog-close]="false">Cancelar</button>
-  <button mat-flat-button color="primary" type="submit" form="frmMedico">Guardar</button>
+  <button mat-flat-button color="primary" type="submit" form="frmMedico" [disabled]="frmMedico().invalid()">Guardar</button>
 </mat-dialog-actions>

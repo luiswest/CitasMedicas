@@ -32,4 +32,7 @@ export class MedicoService {
   filtrar(parametros: ParametrosMedico): void {
     this.parametros.set(parametros);
   }
+  createMedico(datos : MedicoModel) {
+    
+  }
 }

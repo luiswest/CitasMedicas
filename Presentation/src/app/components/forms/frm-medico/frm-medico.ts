@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -32,8 +32,7 @@ function matchesPattern(
 })
 export class FrmMedico {
   titulo: string = "Formulario de Medico";
-  dialogRef = inject(MatDialogRef<FrmMedico>)
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogRef = inject(MatDialogRef<FrmMedico, MedicoCreateInput | undefined>);
 
   objMedico = signal<MedicoCreateInput>({
     especialidad_id: 0,
@@ -75,5 +74,11 @@ export class FrmMedico {
     required(s.username!, {message: 'Nombre de usuario es requerido'});
     required(s.password!, {message: 'Contraseña es requerida'});
 
-  })
+  }, {
+    submission: {
+      action: async () => {
+        this.dialogRef.close(this.objMedico());
+      },
+    },
+  });
 }
