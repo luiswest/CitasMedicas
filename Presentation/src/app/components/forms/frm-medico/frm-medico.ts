@@ -49,7 +49,7 @@ export class FrmMedico {
       const value = context.value();
       //validar si el valor o su representación númerica es un entero
       const numericValue = Number(value); 
-      if (isNaN(numericValue) || !Number.isInteger(numericValue)) {
+      if (isNaN(numericValue) || !Number.isInteger(numericValue) || numericValue <= 0) {
         return value > 0 ? null : { kind: 'invalid', message: 'Especialidad inválida' };
       }
       return null;
