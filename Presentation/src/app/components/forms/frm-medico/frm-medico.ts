@@ -1,6 +1,6 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -30,9 +30,14 @@ function matchesPattern(
   styleUrl: './frm-medico.css',
   templateUrl: './frm-medico.html',
 })
-export class FrmMedico {
-  titulo: string = "Formulario de Medico";
+export class FrmMedico implements OnInit {
+  titulo: string = "";
   private readonly dialogRef = inject(MatDialogRef<FrmMedico, MedicoCreateInput | undefined>);
+
+ // private readonly dialogRef = inject(MatDialogRef<FrmMedico>);
+
+  private readonly dialog = inject(MatDialog);
+  private readonly data = inject(MAT_DIALOG_DATA);
 
   objMedico = signal<MedicoCreateInput>({
     especialidad_id: 0,
@@ -43,42 +48,51 @@ export class FrmMedico {
     password: ''
   });
 
-  frmMedico = form(this.objMedico, (s) =>  {
-    required(s.especialidad_id, {message: 'Especialidad es requerida'});
+  frmMedico = form(this.objMedico, (s) => {
+    required(s.especialidad_id, {message: "Especialidad es requerida"});
     validate(s.especialidad_id, (context: RootFieldContext<number>): { kind: string; message: string } | null => {
       const value = context.value();
       //validar si el valor o su representación númerica es un entero
       const numericValue = Number(value); 
-      if (isNaN(numericValue) || !Number.isInteger(numericValue) || numericValue <= 0) {
-        return value > 0 ? null : { kind: 'invalid', message: 'Especialidad inválida' };
+      if (isNaN(numericValue) || !Number.isInteger(numericValue) ||  numericValue <= 0) {
+        return { kind: 'invalid', message: 'Especialidad inválida' };
       }
       return null;
     });
 
-    required(s.nombre_completo, {message: 'Nombre completo es requerido'});
-    minLength(s.nombre_completo, 2, { message: 'El nombre debe tener al menos 2 caracteres' });
-    maxLength(s.nombre_completo, 50, { message: 'El nombre debe tener como máximo 50 caracteres' });
-    matchesPattern(
-      s.nombre_completo,
-      /^[A-Za-zÑñáéíóú]+( [A-Za-zÑñáéíóú]+){1,3}$/,
-      'Formato de nombre incorrecto',
-    );
+    required(s.nombre_completo, {message: "El nombe es requerido"});
+    minLength(s.nombre_completo, 6, {message: "El nombre debe tener al menos 11 caracteres"});
+    maxLength(s.nombre_completo, 150, {message: "El nombre no puede tener más de 150 caracteres"});
+    matchesPattern(s.nombre_completo, /^[A-Za-zÑñÁÉÍÓÚáéíóú]{2,}(?: [A-Za-zÑñÁÉÍÓÚáéíóú]{2,}){1,3}$/, "Formato de nombre inválido");
+/*     pattern(s.nombre_completo, /^[A-Za-zÑñÁÉÍÓÚáéíóú]{2,}(?: [A-Za-zÑñÁÉÍÓÚáéíóú]{2,}){1,3}$/, 
+      { message: "Formato de nombre inválido"}); */
+    required(s.licencia, {message: "Licencia es requerida"});
+    minLength(s.licencia, 8, {message: 'La licencia debe contener al menos 8 caracteres'});
+    maxLength(s.licencia, 50, {message: 'La licencia no puede contener más de 50 caracteres'});
 
-    required(s.licencia, {message: 'Licencia es requerida'});
-    matchesPattern(
-      s.telefono!,
-      /^[2-9]?[0-9]{3}\-[0-9]{4}$/,
-      'Formato de teléfono incorrecto',
-      true,
-    );
     required(s.username!, {message: 'Nombre de usuario es requerido'});
-    required(s.password!, {message: 'Contraseña es requerida'});
+    minLength(s.username!, 8, {message: "El usuario debe tener al menos 8 caracteres"});
+    maxLength(s.username!, 16, {message: "El usuario no puede tener más de 16 caracteres"});
+    matchesPattern(s.username!, /^[a-z0-9]{8,16}$/, "Formato de usuario inválido");
+    
+    required(s.password!, {message: 'Contraseña es requerido'});
+    minLength(s.password!, 8, {message: "La contraseña debe tener al menos 8 caracteres"});
+    maxLength(s.password!, 64, {message: "La contraseña no puede tener más de 64 caracteres"});
+    matchesPattern(s.password!, /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[#$@*])[\s\S]{8,64}$/, "Formato de usuario inválido");
+
+    matchesPattern(s.telefono!, /^[2-9][0-9]{3}-[0-9]{4}$/, "Formato de teléfono inválido")
+    //pattern(s.telefono!, /^[2-9][0-9]{3}-[0-9]{4}$/, {message: 'Formato de teléfono inválido'});
 
   }, {
     submission: {
       action: async () => {
+        //console.log(this.objMedico());
         this.dialogRef.close(this.objMedico());
-      },
-    },
+      }
+    }
   });
+
+  ngOnInit() : void {
+    this.titulo = this.data.title;
+  }
 }

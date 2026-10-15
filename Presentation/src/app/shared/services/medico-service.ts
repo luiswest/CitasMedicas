@@ -1,9 +1,10 @@
-import { Injectable, signal } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { inject, Injectable, signal } from '@angular/core';
+import { HttpClient, httpResource } from '@angular/common/http';
 import { MedicoModel } from '../models/medico-model';
+import { environment } from '../../../environments/environment.development';
 
 type ParametrosMedico = Record<string, string | number | boolean>;
-
+const _SERVIDOR = environment.servidor;
 interface RespuestaMedicos {
   data: MedicoModel[];
   pagination: {
@@ -16,7 +17,8 @@ interface RespuestaMedicos {
 @Injectable({ providedIn: 'root' })
 export class MedicoService {
   private readonly parametros = signal<ParametrosMedico | null>(null);
-
+  private readonly http = inject(HttpClient);
+  
   readonly medicos = httpResource<RespuestaMedicos>(() => {
     const parametros = this.parametros();
     if (parametros === null) {
@@ -24,7 +26,7 @@ export class MedicoService {
     }
 
     return {
-      url: 'http://localhost:9090/api/medicos/filter/0/5',
+      url:  `${_SERVIDOR}/medicos/filter/0/5`,
       params: parametros,
     };
   });
@@ -34,5 +36,15 @@ export class MedicoService {
   }
   createMedico(datos : MedicoModel) {
     
+  }
+
+    guardar(datos : MedicoModel, id? : number) {
+    delete datos.id;
+
+    if (id) { //Modificando el cliente
+      return this.http.put<any>(`${_SERVIDOR}/medicos/${id}`, datos);
+    } else { //Nuevo cliente
+      return this.http.post<any>(`${_SERVIDOR}/medicos`, datos);
+    }
   }
 }

@@ -64,7 +64,12 @@ export class MedicoComponent implements OnInit {
       }
 
       console.log('Médico recibido del formulario:', medicoCreado);
-      // Aquí puedes llamar al servicio para guardar el médico en la API.
+      this.srvMedico.guardar(medicoCreado)
+        .subscribe({
+          complete : () => {
+            alert('datos creados');
+          }
+        })
     });
 
   } //Fin de mostrarDialogo  
