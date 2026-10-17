@@ -58,7 +58,7 @@ final class MedicoValidatorTest extends TestCase
             'licencia' => 'MED-123',
             'username' => 'doctor123',
             'password' => 'Clave123#',
-            'telefono' => '2222-3333',
+            'telefono' => '2222-333',
         ];
     }
 }
