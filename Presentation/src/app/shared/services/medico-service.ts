@@ -49,11 +49,7 @@ export class MedicoService {
     this.medicoId.set(id);
   }
 
-  createMedico(datos : MedicoModel) {
-    
-  }
-
-  guardar(datos: MedicoCreateInput, id?: number) {
+ guardar(datos: MedicoCreateInput, id?: number) {
     if (id !== undefined) { //Modificando el cliente
       return this.http.put<any>(`${_SERVIDOR}/medicos/${id}`, datos);
     } else { //Nuevo cliente

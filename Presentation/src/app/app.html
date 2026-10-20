@@ -1,4 +1,61 @@
-<!--app-frm-medico></app-frm-medico-->
+<!--app-frm-medico></app-frm-medico-- >
 <app-medico-component/>
 <h1>Hello, Presentation</h1>
-<router-outlet />
+<router-outlet /-->
+<section class="flex">
+    <mat-toolbar class="header">
+        <button matIconButton class="botonMenu" (click)="sidenav.toggle();"
+                [matTooltip]="sidenav.opened ? 'Cerrar menu' : 'Abrir menu'"
+                 [disabled]="!logeado()">
+                <mat-icon>menu</mat-icon>
+        </button>
+        <div class="me-4 flex">
+            <button mat-icon-button [matMenuTriggerFor]="menu" #menuTrigger class="botonMenu">
+                <mat-icon>person</mat-icon>
+            </button>
+        </div>
+        <mat-menu #menu="matMenu">
+            <!--button mat-menu-item [routerLink]="['/login']" [hidden]="this.authService.isLoggedIn()">Iniciar Sesión</button-->
+            <button mat-menu-item>Iniciar Sesión</button>
+            <!--button mat-menu-item (click)="logOut();" [hidden]="!this.authService.isLoggedIn()">Cerrar Sesión</button-->
+            <button mat-menu-item>Cerrar Sesión</button>
+            <mat-divider></mat-divider>
+            <!--button mat-menu-item [routerLink]="['/changePassw']" [hidden]="!this.authService.isLoggedIn()" >Cambiar contraseña</button-->
+            <button mat-menu-item >Cambiar contraseña</button>
+        </mat-menu>
+    </mat-toolbar>
+
+    <mat-sidenav-container class="container">
+        <mat-sidenav #sidenav mode="side" [opened]="logeado()" class="sidenav">
+            
+            <mat-nav-list>
+                <!--mat-list-item class="bg-amber-300! rounded-sm!">{{authService.userActualS().nombre}}</mat-list-item-->
+                <mat-list-item class="bg-amber-300! rounded-sm!">persona</mat-list-item>
+                <hr>
+                
+                @for(item of menuItems(); track item.label) {
+                    <!--mat-list-item [hidden]="!item.rol.includes(this.authService.userActualS().rol)"-->
+                    <mat-list-item [hidden]="!true">
+                        <a href="" [routerLink]="item.route">
+                            <mat-icon>{{item.icon}}</mat-icon>
+                            {{item.label}}
+                        </a>
+                    </mat-list-item>
+                }
+            </mat-nav-list>
+        </mat-sidenav>
+        
+        <mat-sidenav-content>
+            <!--app-loading-compmonent></app-loading-compmonent-->
+            <router-outlet />
+        </mat-sidenav-content>
+
+    </mat-sidenav-container>
+
+    <mat-toolbar class="footer">
+        <span class="font-bold! text-[0.65rem]!">
+            @2026 Citas Médicas. Todos los derechos reservados.
+        </span>
+    </mat-toolbar>
+
+</section>

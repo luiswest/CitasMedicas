@@ -7,6 +7,7 @@ import { MedicoService } from '../../shared/services/medico-service';
 import { MedicoCreateInput, MedicoModel } from '../../shared/models/medico-model';
 import { FrmMedico } from '../forms/frm-medico/frm-medico';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { DialogoGeneral } from '../forms/dialogo-general/dialogo-general';
 
 @Component({
   imports: [MatCardModule, MatButtonModule, MatIconModule, MatTableModule, MatDialogModule],
@@ -38,6 +39,7 @@ export class MedicoComponent implements OnInit {
       if (respuesta !== undefined) {
         this.dataSource.set(respuesta.data);
       }
+
     });
 
     effect(() => {
@@ -74,6 +76,17 @@ export class MedicoComponent implements OnInit {
   private filtrarMedicos() {
     this.srvMedico.filtrar(this.filtro);
   }
+  private alertar(icono: string, mensaje: string, textoAceptar: string) {
+    this.dialog.open(DialogoGeneral, {
+      width: '30vw',
+      maxWidth: '20rem',
+      data: {
+        icono: icono,
+        texto: mensaje,
+        textoAceptar: textoAceptar
+      }
+    });
+  }
 
   public mostrarDialogo(titulo: string, datos?: MedicoModel, info?: boolean, id?: number) {
     const dialogRef = this.dialog.open<FrmMedico, unknown, MedicoCreateInput | false | undefined>(FrmMedico, {
@@ -94,11 +107,21 @@ export class MedicoComponent implements OnInit {
       this.srvMedico.guardar(medicoCreado, id).subscribe({
         complete: () => {
           this.resetearFiltro();
-          alert(id === undefined ? 'Datos creados' : 'Datos actualizados');
+          // alert(id === undefined ? 'Datos creados' : 'Datos actualizados');
+          this.dialog.open(DialogoGeneral, {
+            width: '30vw',
+            maxWidth: '20rem',
+            data: {
+              icono: 'check',
+              texto: id === undefined ? 'Datos creados' : 'Datos actualizados',
+              textoAceptar: ' Aceptar '
+            }
+          });
+          // this.alertar('check', id === undefined ? 'Datos creados' : 'Datos actualizados', ' Aceptar '); hacer así
         },
-        error: (error: unknown) => {
-          console.error('No se pudo guardar el médico:', error);
-          alert('No se pudo guardar el médico');
+        error: (error) => {
+          // console.error('No se pudo guardar el médico:', error);
+          this.alertar('error', 'No se pudo guardar el médico', ' Aceptar ');
         },
       });
     });
