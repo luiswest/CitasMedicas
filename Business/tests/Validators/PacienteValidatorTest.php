@@ -70,7 +70,7 @@ final class PacienteValidatorTest extends TestCase
     {
         return [
             'cedula' => '123456789',
-            'nombre_completo' => 'Maria Elena Rodriguez ',
+            'nombre_completo' => 'Maria Elena Rodriguez',
             'fecha_nacimiento' => '1990-05-17',
             'username' => 'maria123',
             'password' => 'Clave123#',

@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angu
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MedicoCreateInput } from '../../../shared/models/medico-model';
+import { MedicoCreateInput, MedicoModel } from '../../../shared/models/medico-model';
 import { form, FormField, FormRoot, maxLength, minLength, required, RootFieldContext, SchemaPath, validate } from '@angular/forms/signals';
 
 function matchesPattern(
@@ -21,6 +21,12 @@ function matchesPattern(
   });
 }
 
+interface MedicoDialogData {
+  title: string;
+  data?: MedicoModel;
+  info?: boolean;
+}
+
 @Component({
   imports: [
     MatDialogModule, MatDividerModule, MatButtonModule, MatFormFieldModule, MatInputModule,
@@ -34,10 +40,9 @@ export class FrmMedico implements OnInit {
   titulo: string = "";
   private readonly dialogRef = inject(MatDialogRef<FrmMedico, MedicoCreateInput | undefined>);
 
- // private readonly dialogRef = inject(MatDialogRef<FrmMedico>);
-
   private readonly dialog = inject(MatDialog);
-  private readonly data = inject(MAT_DIALOG_DATA);
+  private readonly data = inject<MedicoDialogData>(MAT_DIALOG_DATA);
+  readonly isEditing = this.data.data !== undefined;
 
   objMedico = signal<MedicoCreateInput>({
     especialidad_id: 0,
@@ -70,15 +75,17 @@ export class FrmMedico implements OnInit {
     minLength(s.licencia, 8, {message: 'La licencia debe contener al menos 8 caracteres'});
     maxLength(s.licencia, 50, {message: 'La licencia no puede contener más de 50 caracteres'});
 
-    required(s.username!, {message: 'Nombre de usuario es requerido'});
-    minLength(s.username!, 8, {message: "El usuario debe tener al menos 8 caracteres"});
-    maxLength(s.username!, 16, {message: "El usuario no puede tener más de 16 caracteres"});
-    matchesPattern(s.username!, /^[a-z0-9]{8,16}$/, "Formato de usuario inválido");
-    
-    required(s.password!, {message: 'Contraseña es requerido'});
-    minLength(s.password!, 8, {message: "La contraseña debe tener al menos 8 caracteres"});
-    maxLength(s.password!, 64, {message: "La contraseña no puede tener más de 64 caracteres"});
-    matchesPattern(s.password!, /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[#$@*])[\s\S]{8,64}$/, "Formato de usuario inválido");
+    if (!this.isEditing) {
+      required(s.username!, {message: 'Nombre de usuario es requerido'});
+      minLength(s.username!, 8, {message: "El usuario debe tener al menos 8 caracteres"});
+      maxLength(s.username!, 16, {message: "El usuario no puede tener más de 16 caracteres"});
+      matchesPattern(s.username!, /^[a-z0-9]{8,16}$/, "Formato de usuario inválido");
+
+      required(s.password!, {message: 'Contraseña es requerido'});
+      minLength(s.password!, 8, {message: "La contraseña debe tener al menos 8 caracteres"});
+      maxLength(s.password!, 64, {message: "La contraseña no puede tener más de 64 caracteres"});
+      matchesPattern(s.password!, /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[#$@*])[\s\S]{8,64}$/, "Formato de usuario inválido");
+    }
 
     matchesPattern(s.telefono!, /^[2-9][0-9]{3}-[0-9]{4}$/, "Formato de teléfono inválido")
     //pattern(s.telefono!, /^[2-9][0-9]{3}-[0-9]{4}$/, {message: 'Formato de teléfono inválido'});
@@ -94,5 +101,15 @@ export class FrmMedico implements OnInit {
 
   ngOnInit() : void {
     this.titulo = this.data.title;
+    if (this.data.data) {
+      this.objMedico.set({
+        especialidad_id: this.data.data.especialidad_id,
+        nombre_completo: this.data.data.nombre_completo,
+        licencia: this.data.data.licencia,
+        telefono: this.data.data.telefono ?? '',
+        username: '',
+        password: '',
+      });
+    }
   }
 }

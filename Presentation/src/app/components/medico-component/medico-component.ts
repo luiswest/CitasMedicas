@@ -15,6 +15,8 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
   templateUrl: './medico-component.html',
 })
 export class MedicoComponent implements OnInit {
+  buscarID = signal<number | null>(null);
+  //medicoSeleccionado = signal<MedicoModel | null>(null);
   filtro : { nombre: string; cedula: string; especialidad: string } = { nombre: '', cedula: '', especialidad: '' };
   displayedColumns: string[] = [
     'id',
@@ -34,8 +36,34 @@ export class MedicoComponent implements OnInit {
     effect(() => {
       const respuesta = this.srvMedico.medicos.value();
       if (respuesta !== undefined) {
-       // console.log(respuesta.data);
         this.dataSource.set(respuesta.data);
+      }
+    });
+
+    effect(() => {
+      const id = this.buscarID();
+      const respuesta = this.srvMedico.medicoPorId;
+
+      if (id === null) {
+        return;
+      }
+
+      if (respuesta.status() === 'resolved') {
+        const medico = respuesta.value()?.data;
+/*         if (medico === null) {
+         // this.medicoSeleccionado.set(null);
+          alert('No se encontró el médico');
+          return;
+        }
+        if (medico?.id !== id) {
+          return;
+        } */
+
+        //this.medicoSeleccionado.set(medico);
+        this.mostrarDialogo('Editar Médico', medico!, false, id);
+      } else if (respuesta.status() === 'error') {
+        console.error(`No se pudo buscar el médico con ID ${id}:`, respuesta.error());
+        alert('No se pudo cargar el médico');
       }
     });
   }
@@ -47,8 +75,8 @@ export class MedicoComponent implements OnInit {
     this.srvMedico.filtrar(this.filtro);
   }
 
-  public mostrarDialogo(titulo: string, datos? : MedicoModel, info? : boolean) {
-    const dialogRef = this.dialog.open<FrmMedico, unknown, MedicoCreateInput | undefined>(FrmMedico, {
+  public mostrarDialogo(titulo: string, datos?: MedicoModel, info?: boolean, id?: number) {
+    const dialogRef = this.dialog.open<FrmMedico, unknown, MedicoCreateInput | false | undefined>(FrmMedico, {
       width: '50vw',
       maxWidth: '35rem',
       data: {
@@ -59,26 +87,31 @@ export class MedicoComponent implements OnInit {
       disableClose : true
     });
     dialogRef.afterClosed().subscribe((medicoCreado) => {
-      if (medicoCreado === undefined) {
+      if (medicoCreado === undefined || medicoCreado === false) {
         return;
       }
 
-      console.log('Médico recibido del formulario:', medicoCreado);
-      this.srvMedico.guardar(medicoCreado)
-        .subscribe({
-          complete : () => {
-            alert('datos creados');
-          }
-        })
+      this.srvMedico.guardar(medicoCreado, id).subscribe({
+        complete: () => {
+          this.resetearFiltro();
+          alert(id === undefined ? 'Datos creados' : 'Datos actualizados');
+        },
+        error: (error: unknown) => {
+          console.error('No se pudo guardar el médico:', error);
+          alert('No se pudo guardar el médico');
+        },
+      });
     });
-
   } //Fin de mostrarDialogo  
   onCreate() {
-    this.mostrarDialogo('Nuevo Cliente');
+    this.buscarID.set(null);
+  //  this.medicoSeleccionado.set(null);
+    this.mostrarDialogo('Nuevo Médico');
   }
-  onEdit(medico: number) {
-    //this.mostrarDialogo('Editar Cliente', medico);
-    console.log('Editar cliente:', medico);
+  onEdit(id: number) {
+    this.buscarID.set(id);
+   // this.medicoSeleccionado.set(null);
+    this.srvMedico.buscarPorId(id);
   }
   onInfo(medico: number) {
     //this.mostrarDialogo('Ver Cliente', medico, true);

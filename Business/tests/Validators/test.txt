@@ -1,2 +1,0 @@
-docker compose build webnegocio
-docker compose run --rm --no-deps webnegocio composer test

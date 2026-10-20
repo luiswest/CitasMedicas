@@ -1,19 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { vi } from 'vitest';
 import { FrmMedico } from './frm-medico';
+import { MedicoModel } from '../../../shared/models/medico-model';
 
 describe('FrmMedico', () => {
   let component: FrmMedico;
   let fixture: ComponentFixture<FrmMedico>;
   const dialogRef = { close: vi.fn() };
+  const dialogData: { title: string; data?: MedicoModel } = { title: 'Nuevo Médico' };
 
   beforeEach(async () => {
     dialogRef.close.mockClear();
+    dialogData.title = 'Nuevo Médico';
+    dialogData.data = undefined;
 
     await TestBed.configureTestingModule({
       imports: [FrmMedico],
-      providers: [{ provide: MatDialogRef, useValue: dialogRef }],
+      providers: [
+        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FrmMedico);
@@ -29,10 +36,10 @@ describe('FrmMedico', () => {
     const medico = {
       especialidad_id: 1,
       nombre_completo: 'Ana Maria Lopez',
-      licencia: 'LIC-123',
-      telefono: '',
-      username: 'ana',
-      password: 'secret',
+      licencia: 'LIC-12345',
+      telefono: '8888-1234',
+      username: 'ana12345',
+      password: 'Ana12345#',
     };
     component.objMedico.set(medico);
 
@@ -51,5 +58,31 @@ describe('FrmMedico', () => {
     await fixture.whenStable();
 
     expect(dialogRef.close).not.toHaveBeenCalled();
+  });
+
+  it('should prefill the form with the selected doctor', () => {
+    fixture.destroy();
+    dialogData.title = 'Editar Médico';
+    dialogData.data = {
+      id: 1,
+      especialidad_id: 2,
+      nombre_completo: 'Ana Maria Lopez',
+      licencia: 'LIC-12345',
+      telefono: '8888-1234',
+    };
+
+    fixture = TestBed.createComponent(FrmMedico);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.objMedico()).toEqual({
+      especialidad_id: 2,
+      nombre_completo: 'Ana Maria Lopez',
+      licencia: 'LIC-12345',
+      telefono: '8888-1234',
+      username: '',
+      password: '',
+    });
+    expect(component.isEditing).toBe(true);
   });
 });

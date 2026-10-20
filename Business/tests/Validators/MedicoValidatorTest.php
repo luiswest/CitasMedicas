@@ -42,7 +42,7 @@ final class MedicoValidatorTest extends TestCase
     {
         return [
             'non-positive specialty' => ['especialidad_id', 0],
-            'invalid full name' => ['nombre_completo', 'Ana ams lll'],
+            'invalid full name' => ['nombre_completo', 'Ana'],
             'missing license' => ['licencia', ''],
             'invalid username characters' => ['username', 'doctor_01'],
             'password without a symbol' => ['password', 'Clave123'],
@@ -58,7 +58,7 @@ final class MedicoValidatorTest extends TestCase
             'licencia' => 'MED-123',
             'username' => 'doctor123',
             'password' => 'Clave123#',
-            'telefono' => '2222-333',
+            'telefono' => '2222-3333',
         ];
     }
 }

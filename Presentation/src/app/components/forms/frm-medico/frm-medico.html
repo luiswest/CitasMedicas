@@ -42,25 +42,27 @@
         }
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Usuario</mat-label>
-      <input matInput placeholder="Nombre de usuario" [formField]="frmMedico.username!" />
-      @if (frmMedico.username!().touched() && frmMedico.username!().invalid()) {
-        @for(error of frmMedico.username!().errors(); track error.kind) {
-            <mat-error>{{ error.message }}</mat-error>
+    @if (!isEditing) {
+      <mat-form-field appearance="outline">
+        <mat-label>Usuario</mat-label>
+        <input matInput placeholder="Nombre de usuario" [formField]="frmMedico.username!" />
+        @if (frmMedico.username!().touched() && frmMedico.username!().invalid()) {
+          @for(error of frmMedico.username!().errors(); track error.kind) {
+              <mat-error>{{ error.message }}</mat-error>
+            }
           }
-        }
-    </mat-form-field>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Contraseña</mat-label>
-      <input matInput type="password" placeholder="Contraseña" [formField]="frmMedico.password!" />
-      @if (frmMedico.password!().touched() && frmMedico.password!().invalid()) {
-        @for(error of frmMedico.password!().errors(); track error.kind) {
-            <mat-error>{{ error.message }}</mat-error>
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña</mat-label>
+        <input matInput type="password" placeholder="Contraseña" [formField]="frmMedico.password!" />
+        @if (frmMedico.password!().touched() && frmMedico.password!().invalid()) {
+          @for(error of frmMedico.password!().errors(); track error.kind) {
+              <mat-error>{{ error.message }}</mat-error>
+            }
           }
-        } 
-    </mat-form-field>
+      </mat-form-field>
+    }
   </form>
 </mat-dialog-content>
 
