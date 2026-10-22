@@ -44,6 +44,7 @@ class Medico {
                 ->withHeader(
                     'Content-Type', $upstream->getHeaderLine('Content-Type') ?: 'application/json; charset=utf-8')
                 ->withStatus($upstream->getStatusCode());
+
         } catch (ConnectException){
             return $this->json($response, ['error' => 'El servicio de datos no está disponible'], 502);
         }
@@ -69,6 +70,7 @@ class Medico {
             $dataService = $this->container->get(DataService::class);
             
             $upstream = $dataService->post('medicos', json_encode($data, JSON_THROW_ON_ERROR));
+
             return $this->json($response, json_decode((string) $upstream->getBody(), true),
                 $upstream->getStatusCode() );
 
@@ -81,13 +83,20 @@ class Medico {
     }
 
     public function update(Request $request, Response $response, array $args): Response {
+       // return $this->json($response, json_decode((string) $upstream->getBody()), 200);
         try {
             $dataService = $this->container->get(DataService::class);
             $body = (string) $request->getBody();
+            
             $upstream = $dataService->put('medicos/' . rawurlencode($args['id']), $body);
 
-            return $this->json($response, json_decode((string) $upstream->getBody(), true),
-                $upstream->getStatusCode() );
+            $response->getBody()->write(json_encode(['mensaje' => 'guardado']));
+            return $response
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+            ->withStatus(200);
+
+/*             return $this->json($response, json_decode((string) $upstream->getBody(), true),
+                $upstream->getStatusCode() ); */
 
         } catch (ConnectException){
             return $this->json($response, ['error' => 'El servicio de datos no está disponible'], 502);

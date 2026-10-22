@@ -11,11 +11,11 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
-    "especialidad_id": 2,
-    "nombre_completo": "Luis Armando West",
+    "especialidad_id": 1,
+    "nombre_completo": "Lulu Armando West",
     "licencia": "LIC-123453",
-    "telefono": "8888-7771",
-    "username": "luiswest2",
+    "telefono": "8888-7770",
+    "username": "luluwest2",
     "password": "secure1D#"
   }
 ###
@@ -25,8 +25,8 @@ PUT {{uri}}/3
 Content-Type: application/json
 
  {
-    "nombre_completo": "Armando West Grant",
-    "telefono": "8686-5555"
+    "nombre_completo": "Luis West Grant",
+    "telefono": "8686-5535"
   }
 ###
 DELETE {{uri}}/6

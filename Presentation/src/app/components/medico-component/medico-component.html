@@ -10,13 +10,13 @@
   <!--- Note that these columns can be defined in any order.
         The actual rendered columns are set as a property on the row definition" -->
 
-  <!-- Position Column -->
+  <!-- Id Column -->
   <ng-container matColumnDef="id">
     <th mat-header-cell *matHeaderCellDef> id. </th>
     <td mat-cell *matCellDef="let medico"> {{medico.id}} </td>
   </ng-container>
 
-  <!-- Name Column -->
+  <!-- Nombre Column -->
   <ng-container matColumnDef="nombre_completo">
     <th mat-header-cell *matHeaderCellDef> Nombre Completo </th>
     <td mat-cell *matCellDef="let medico"> {{medico.nombre_completo}} </td>
@@ -36,6 +36,33 @@
     <th mat-header-cell *matHeaderCellDef> Teléfono </th>
     <td mat-cell *matCellDef="let medico"> {{medico.telefono}} </td>
   </ng-container>
+
+  <!-- Botonera column -->
+  <ng-container matColumnDef="botonera">
+    <th mat-header-cell *matHeaderCellDef style="text-align: center;"> 
+        <button (click)="onCreate();" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-10 py-0.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 cursor-pointer">
+            <mat-icon>add</mat-icon>
+        </button>
+    </th>
+
+    <td mat-cell *matCellDef="let medico"> 
+      <div class="flex justify-center gap-1">
+          <button (click)="onInfo(medico.id);" class="flex content-center items-center focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1 cursor-pointer">
+            <mat-icon>info</mat-icon>
+          </button>
+          <button (click)="onEdit(medico.id)" class="flex content-center items-center focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-2 py-1 cursor-pointer">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button (click)="onDelete(medico.id);" class="flex content-center items-center focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-2 py-1 cursor-pointer">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button (click)="onResetPassword(medico.id);" class="flex content-center items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-2 py-1 cursor-pointer">
+            <mat-icon>key</mat-icon>
+          </button>
+      </div>
+    </td>
+  </ng-container>
+
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
