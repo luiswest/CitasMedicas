@@ -11,17 +11,17 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
-    "especialidad_id": 1,
-    "nombre_completo": "Lulu Armando West",
-    "licencia": "LIC-123453",
+    "especialidad_id": 2,
+    "nombre_completo": "Luisa Cooper West",
+    "licencia": "LIC-123457",
     "telefono": "8888-7770",
-    "username": "luluwest2",
+    "username": "luisaco2",
     "password": "secure1D#"
   }
 ###
 
 PUT {{uri}}/3
-#Authorization: Bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
  {
@@ -29,7 +29,7 @@ Content-Type: application/json
     "telefono": "8686-5535"
   }
 ###
-DELETE {{uri}}/6
+DELETE {{uri}}/5
 ###
 
 GET {{uri}}/filter/0/10?nombre=&cedula=&especialidad=
@@ -40,6 +40,6 @@ POST http://localhost:9090/api/auth/login
 Content-Type: application/json
 
 {
-    "username": "luluwest",
-    "password": "securepassword"
+    "username": "luisaco2",
+    "password": "secure1D#"
 }
