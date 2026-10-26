@@ -1,10 +1,10 @@
 export class User {
-    cedula : string;
-    nombre : string;
-    rol : number;
+    id : string;
+    username : string;
+    rol_id : number;
     constructor(usr? :  User) {
-        this.cedula = usr !== undefined ? usr.cedula : '';
-        this.nombre = usr !== undefined ? usr.nombre : '';
-        this.rol = usr !== undefined ? usr.rol : -1;
+        this.id = usr !== undefined ? usr.id : '';
+        this.username = usr !== undefined ? usr.username : '';
+        this.rol_id = usr !== undefined ? usr.rol_id : -1;
     }
 }

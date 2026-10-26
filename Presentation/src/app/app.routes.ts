@@ -17,5 +17,13 @@ export const routes: Routes = [
         canActivate: [authGuard], data: {roles: [Roles.Admin, Roles.Medico]},  //Solo admin y medico
         loadComponent: () => import('./components/medico-component/medico-component')
         .then(m => m.MedicoComponent)
-    }
+    },
+    { path: 'paciente',
+        canActivate: [authGuard], data: {roles: [Roles.Admin, Roles.Medico]},  //Solo admin y medico
+        loadComponent: () => import('./components/paciente-component/paciente-component')
+        .then(m => m.PacienteComponent)
+    },    
+    { path: '**', loadComponent: () => import ('./components/error404-component/error404-component')
+        .then(m => m.Error404Component)
+    },    
 ];

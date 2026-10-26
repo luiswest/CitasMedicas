@@ -41,9 +41,9 @@ export class App {
     {label: 'Cancelar Cita', icon: 'event_busy', route: 'cancelarcita', rol: [0, 1, 2]}
   ]);
   @HostListener("window:beforeunload") unloadHandler() {
-    this.logOut()
+    this.logout()
   }
-  logOut(){
+  logout(){
     this.authService.logout();
   }
   logeado() : boolean {

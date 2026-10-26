@@ -17,7 +17,6 @@ export class TokenService {
       this.setToken(tokens.token);
       this.setRefreshToken(tokens.tkRef);
   }
-
   public get token() : any {
     return localStorage.getItem(this.JWT_TOKEN);
   }
@@ -28,7 +27,6 @@ export class TokenService {
     localStorage.removeItem(this.JWT_TOKEN);
     localStorage.removeItem(this.REFRESH_TOKEN);
   }
-
   public decodeToken() : any {
     const helper = new JwtHelperService();
     return helper.decodeToken(this.token);
