@@ -19,10 +19,10 @@ final class Auth
         $data = is_array($data) ? $data : [];
         $username = trim((string) ($data['username'] ?? ''));
         $password = (string) ($data['password'] ?? '');
-
+             
         $this->container->get('eloquent');
         $user = User::query()->where('username', $username)->where('activo', true)->first();
-
+        
         if ($user === null || !password_verify($password, (string) $user->password)) {
             return $this->json($response, ['error' => 'Credenciales inválidas.'], 401);
         }
@@ -33,6 +33,17 @@ final class Auth
             'rol_id' => (int) $user->rol_id,
         ], 200);
     }
+
+    public function updateTokenRef(Request $request, Response $response, $args) : Response {
+        $data = $request->getParsedBody();
+        
+        $this->container->get('eloquent');
+
+        $user = User::find($args['id']);
+        $user->tkRef =  trim((string) ($data['tkRef'] ?? ''));
+        $user->save();
+        return $this->json($response, ['msj' => 'Token refresco modificado'], 200);
+    }  
 
     private function json(Response $response, array $payload, int $status): Response
     {
