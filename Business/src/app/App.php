@@ -32,7 +32,7 @@ require_once "routes.php";
 $app->add(new JwtAuthentication(
 	new Options(isSecure: false),
 	new FirebaseDecoder(new Secret($_ENV['KEY'], 'HS256')),
-	[new RequestPathRule(['/'], ['/api/auth/login', '/api/medicos'])]
+	[new RequestPathRule(['/'], ['/api/auth/login'])]
 ));
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
@@ -51,7 +51,7 @@ $app->add(new JwtAuthentication(
 	new FirebaseDecoder(new Secret($_ENV['KEY'], 'HS256')),
 	[new RequestPathRule(
         ['/'], 
-        ['/api/auth/login', '/api/medicos'])]
+        ['/api/auth/login'])]
 ));
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);

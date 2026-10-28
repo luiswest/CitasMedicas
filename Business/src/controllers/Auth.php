@@ -1,9 +1,6 @@
 <?php
-
 declare(strict_types=1);
-
 namespace App\controllers;
-
 use Firebase\JWT\JWT;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
@@ -54,15 +51,14 @@ final class Auth
                 'username' => $credentials['username'],
                 'rol_id' => (int) $credentials['rol_id'],
             ];
-
+            $payloadRef = [
+                'iss' => 'citas-medicas-business',
+                'iat' => $now,
+                'sub' => (string) $credentials['id'],
+            ];
             return $this->json($response, [
                 'token' => JWT::encode($payload, $config->key, 'HS256'),
-                'expires_in' => $config->jwt_ttl,
-                'user' => [
-                    'id' => (int) $credentials['id'],
-                    'username' => $credentials['username'],
-                    'rol_id' => (int) $credentials['rol_id'],
-                ],
+                'tkRef' => JWT::encode($payloadRef, $config->key, 'HS256')
             ], 200);
         } catch (ConnectException) {
             return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
