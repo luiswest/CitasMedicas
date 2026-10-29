@@ -29,12 +29,6 @@ $app->addBodyParsingMiddleware();
 require_once "config.php";
 require_once "routes.php";
 
-$app->add(new JwtAuthentication(
-	new Options(isSecure: false),
-	new FirebaseDecoder(new Secret($_ENV['KEY'], 'HS256')),
-	[new RequestPathRule(['/'], ['/api/auth', '/api/medicos'])]
-));
-
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $errorMiddleware->setErrorHandler(AuthorizationException::class,
 	function ($request, AuthorizationException $exception, bool $displayErrorDetails) use ($app) {
@@ -51,7 +45,7 @@ $app->add(new JwtAuthentication(
 	new FirebaseDecoder(new Secret($_ENV['KEY'], 'HS256')),
 	[new RequestPathRule(
         ['/'], 
-        ['/api/auth/login', '/api/medicos'])]
+        ['/api/auth'])]
 ));
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);

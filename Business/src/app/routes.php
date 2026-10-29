@@ -6,7 +6,7 @@ use Slim\Routing\RouteCollectorProxy;
 $app->group('/api', function(RouteCollectorProxy $api) {
     $api->group('/auth', function(RouteCollectorProxy $endpoint) {
         $endpoint->post('/login', Auth::class . ':login');
-        $endpoint->patch('/logout/{id}', Auth::class . ':logout');
+        $endpoint->patch('/loggout/{id}', Auth::class . ':loggout');
     });
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');

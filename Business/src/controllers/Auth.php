@@ -77,14 +77,14 @@ final class Auth
             return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos.'], 502);
         }
     }
-    public function logout(Request $request, Response $response, $args): Response {
+    public function loggout(Request $request, Response $response, $args): Response {
         try {
                 $service = $this->container->get(DataService::class);
                 $upstream = $service->put('auth/tkref/'.$args['id'], json_encode([
                     'tkRef' => ""
                 ], JSON_THROW_ON_ERROR)); 
                  
-                return $this.json($response, ['msj' => "Sesión cerrada"], 200);
+                return $this->json($response, ['msj' => "Sesión cerrada"], 200);
 
         } catch (ConnectException) {
             return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
