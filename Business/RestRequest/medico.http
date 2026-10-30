@@ -43,3 +43,6 @@ Content-Type: application/json
     "username": "luisaco2",
     "password": "secure1D#"
 }
+###
+
+DELETE  http://localhost:9090/api/auth/loggout/{1}

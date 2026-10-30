@@ -40,7 +40,6 @@ final class Auth
                     'error' => 'Credenciales inválidas.',
                 ], 401);
             }
-
             $now = time();
             $config = $this->container->get('config');
             $payload = [
@@ -56,9 +55,16 @@ final class Auth
                 'iat' => $now,
                 'sub' => (string) $credentials['id'],
             ];
+            $token = JWT::encode($payload, $config->key, 'HS256');
+            $tkRef = JWT::encode($payloadRef, $config->key, 'HS256');
+
+            //hay que guardar el token de refresco
+            $upstream = $service->put('auth/updatetkref/' . $credentials['id'], json_encode(
+                    ['tkRef' => $tkRef], JSON_THROW_ON_ERROR)); 
+
             return $this->json($response, [
-                'token' => JWT::encode($payload, $config->key, 'HS256'),
-                'tkRef' => JWT::encode($payloadRef, $config->key, 'HS256')
+                'token' => $token,
+                'tkRef' => $tkRef
             ], 200);
         } catch (ConnectException) {
             return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
@@ -66,7 +72,20 @@ final class Auth
             return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos.'], 502);
         }
     }
+    public function loggout(Request $request, Response $response, $args): Response {
+        try {
+                $service = $this->container->get(DataService::class);
+                $upstream = $service->delete('auth/updatetkref/'.$args['id'], json_encode(
+                    ['tkRef' => ""], JSON_THROW_ON_ERROR)); 
+                 
+                return $this->json($response, ['msj' => "Sesión cerrada"], 200);
 
+        } catch (ConnectException) {
+            return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
+        } catch (RequestException) {
+            return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos.'], 502);
+        }   
+    }
     private function json(Response $response, array $payload, int $status): Response
     {
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
