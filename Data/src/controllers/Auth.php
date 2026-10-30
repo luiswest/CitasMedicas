@@ -33,7 +33,17 @@ final class Auth
             'rol_id' => (int) $user->rol_id,
         ], 200);
     }
+    public function updateTokenRef(Request $request, Response $response): Response { 
+        $data = $request->getParsedBody();
+        $this->container->get('eloquent');
 
+        $user = User::find($args['id']);
+    
+        $user->tkRef = trim((string) ($data['tkRef'] ?? ''));
+        $user->save();
+        return $this->json($response, ['msj' => 'Token refresco modificado']);
+
+    }
     private function json(Response $response, array $payload, int $status): Response
     {
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
