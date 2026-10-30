@@ -90,7 +90,7 @@ final class Auth
             return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
         } catch (RequestException) {
             return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos.'], 502);
-        }        
+        }   
     }
 
     private function json(Response $response, array $payload, int $status): Response
