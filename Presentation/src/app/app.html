@@ -2,7 +2,7 @@
     <mat-toolbar class="header">
         <button matIconButton class="botonMenu" (click)="sidenav.toggle();"
             [matTooltip]="sidenav.opened ? 'Cerrar menú' : 'Abrir menú'" matTooltipPosition="right"
-            [disabled]="!loggedIn()">
+            [disabled]="!authService.isLoggedIn()">
             <mat-icon>menu</mat-icon>
         </button>
         <div class="me-4 flex">
@@ -11,15 +11,15 @@
             </button>
         </div>
         <mat-menu #menu="matMenu">
-            <button mat-menu-item [routerLink]="['/login']">Iniciar sesión</button>
-            <button mat-menu-item>Cerrar sesión</button>
+            <button mat-menu-item [routerLink]="['/login']" [hidden]="authService.isLoggedIn()">Iniciar sesión</button>
+            <button mat-menu-item (click)="loggout()" [hidden]="!authService.isLoggedIn()">Cerrar sesión</button>
             <mat-divider></mat-divider>
-            <button mat-menu-item>Cambiar contraseña</button>
+            <button mat-menu-item [hidden]="!authService.isLoggedIn()">Cambiar contraseña</button>
         </mat-menu>
     </mat-toolbar>
 
     <mat-sidenav-container class="container">
-        <mat-sidenav #sidenav mode="side" class="sidenav" [opened]="loggedIn()">
+        <mat-sidenav #sidenav mode="side" class="sidenav" [opened]="authService.isLoggedIn()">
             <mat-nav-list>
                 <mat-list-item class="bg-amber-500">Luis West</mat-list-item>
                 <hr>

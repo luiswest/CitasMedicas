@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
+import { AuthService } from './shared/services/auth-service';
 
 type MenuItem = {
   label : string;
@@ -26,19 +27,23 @@ type MenuItem = {
 })
 export class App {
   protected readonly title = signal('Presentation');
+  protected readonly authService = inject(AuthService);
 
   menuItems: MenuItem[] = [
-    {label: 'Inicio', icon: 'home', route:'home', rol :[0, 1 , 2, 3]},
-    {label: 'Medicos', icon: 'stethoscope', route:'medico', rol : [0, 1, 3]},
-    {label: 'Pacientes', icon: 'personal_injury', route:'paciente', rol :[0, 1]},
-    {label: 'Citas', icon: 'calendar_month', route:'citas', rol :[0, 1]},
+    {label: 'Inicio', icon: 'home', route:'home', rol :[1 , 2, 3]},
+    {label: 'Medicos', icon: 'stethoscope', route:'medico', rol : [1, 3]},
+    {label: 'Pacientes', icon: 'personal_injury', route:'paciente', rol :[1]},
+    {label: 'Citas', icon: 'calendar_month', route:'citas', rol :[1]},
   ];
-  
-  logout() {
 
+  @HostListener("window:beforeunload") uloadHandler() {
+    this.loggout();
   }
 
-  loggedIn() : boolean {
-    return true;
+  loggout() {
+    this.authService.loggout();
   }
+
 }
+
+

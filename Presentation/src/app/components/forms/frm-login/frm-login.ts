@@ -7,6 +7,8 @@ import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { MatInput } from "@angular/material/input";
 import { LoginForm } from '../../../shared/models/interfaces';
 import { MatDialogRef } from '@angular/material/dialog';
+import { AuthService } from '../../../shared/services/auth-service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -18,10 +20,12 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class FrmLogin {
 
-//  private readonly srvAuth = inject(AuthService);
+  private readonly srvAuth = inject(AuthService);
+  private readonly router = inject(Router);
 
   dialogRef = inject(MatDialogRef<FrmLogin>)
   public mostrarError = signal(false);
+
   objLogin = signal<LoginForm>( {
     username : '',
     password: ''
@@ -35,10 +39,26 @@ export class FrmLogin {
   {
     submission: {
       action: async () => {
-        //console.log("valor que contiene el objeto", this.objLogin());
-        this.dialogRef.close(this.objLogin());
+
+
+        this.loggin(this.objLogin());
       }
     }
   }
 );
+
+loggin(datos : LoginForm) {
+     this.srvAuth.login(datos)
+      .subscribe({
+        next: (res) => {
+          if (res && res != 401) {
+            this.dialogRef.close();
+            this.router.navigate(['/home']);
+          }
+          else {
+              this.mostrarError.set(true);
+          }
+        }
+      }) 
+}
 }

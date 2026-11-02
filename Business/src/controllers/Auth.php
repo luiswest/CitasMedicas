@@ -13,8 +13,7 @@ final class Auth
 {
     public function __construct(private ContainerInterface $container) {}
 
-    public function login(Request $request, Response $response): Response
-    {
+    public function login(Request $request, Response $response): Response {
         $data = $request->getParsedBody();
         $data = is_array($data) ? $data : [];
         $username = trim((string) ($data['username'] ?? ''));
@@ -57,10 +56,11 @@ final class Auth
             ];
             $token = JWT::encode($payload, $config->key, 'HS256');
             $tkRef = JWT::encode($payloadRef, $config->key, 'HS256');
-
+            
             //hay que guardar el token de refresco
-            $upstream = $service->put('auth/updatetkref/' . $credentials['id'], json_encode(
-                    ['tkRef' => $tkRef], JSON_THROW_ON_ERROR)); 
+             $upstream = $service->put('auth/tkref/'.$credentials['id'], json_encode(
+                ['tkRef' => $tkRef], JSON_THROW_ON_ERROR));
+  
 
             return $this->json($response, [
                 'token' => $token,
@@ -75,7 +75,7 @@ final class Auth
     public function loggout(Request $request, Response $response, $args): Response {
         try {
                 $service = $this->container->get(DataService::class);
-                $upstream = $service->delete('auth/updatetkref/'.$args['id'], json_encode(
+                $upstream = $service->put('auth/tkref/'.$args['id'], json_encode(
                     ['tkRef' => ""], JSON_THROW_ON_ERROR)); 
                  
                 return $this->json($response, ['msj' => "Sesión cerrada"], 200);
@@ -86,8 +86,7 @@ final class Auth
             return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos.'], 502);
         }   
     }
-    private function json(Response $response, array $payload, int $status): Response
-    {
+    private function json(Response $response, array $payload, int $status): Response {
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
         return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus($status);
     }

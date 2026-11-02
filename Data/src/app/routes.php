@@ -5,21 +5,10 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 use Slim\Routing\RouteCollectorProxy;
 
-$app->get('/', function (Request $request, Response $response, array $args) {
-    
-    $response->getBody()->write("Hola Slim");
-    return $response;
-});
-$app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
-    $name = $args['name'];
-    $response->getBody()->write("Hello, $name");
-    return $response;
-});
-
 $app->group('/api', function(RouteCollectorProxy $api) {
     $api->group('/auth', function(RouteCollectorProxy $endpoint) {
-        $endpoint->post('/credentials', Auth::class . ':credentials');
-        $endpoint->put('/updatetkref', Auth::class . ':updateTokenRef');
+        $endpoint->post('/credentials', Auth::class . ':credentials');  
+        $endpoint->put('/tkref/{id}', Auth::class . ':updateTokenRef');
     });    
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');

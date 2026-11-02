@@ -16,26 +16,42 @@ export class AuthService {
     private readonly router = inject(Router);
     public userActualS = signal(new User);
     public login(datos : LoginForm) {
-        //console.log(datos);
         return this.http.post<IToken>(`${servidor}/login` , datos)
         .pipe(
             tap((tokens) => {
-            //console.log(tokens);
             this.doLogin(tokens);
             }),
             map(() => true),
             catchError((error) => {
-            console.log(error);
-            return of (error.status);
+                return of (error.status);
             })
         )
     }
+    public loggout() {
+        if (this.isLoggedIn()) {
+        this.http.delete(`${servidor}/loggout/${this.userActual.id}`,{})
+            .subscribe();      
+        this.doLoggOut();   //Esto fuera del if 
+        }
+    }
+
     doLogin(tokens  : any) {
         //guardar los tokens
         this.srvTokens.setTokens(tokens);
         //actualizar datos globales para usuario y rol
         this.userActualS.set(this.userActual);
     } 
+    doLoggOut() {
+        //Eliminar los tokens
+        if (this.srvTokens.token) {
+        this.srvTokens.eliminarTokens();
+        }
+        //limpiar datos globales para usuario y rol
+        this.userActualS.set(this.userActual);
+
+        //navegar a la página de login
+        this.router.navigate(['/login']);
+    }
      public isLoggedIn() : boolean {
         return !!this.srvTokens.token && !this.srvTokens.jwtTokenExp();
     }

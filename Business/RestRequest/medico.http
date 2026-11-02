@@ -1,6 +1,6 @@
 @host = http://localhost:9090/api
 @uri = {{host}}/medicos
-@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkwNzM4OTc0LCJleHAiOjE3OTA3NDI1NzQsInN1YiI6IjEiLCJ1c2VybmFtZSI6Imx1bHV3ZXN0Iiwicm9sX2lkIjoyfQ.pHPKJqCBpiIU_E4GddI3O81Njbpn4SN6pLK-S6kAcZ4
+@token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkzMzY5ODA3LCJleHAiOjE3OTMzNzM0MDcsInN1YiI6IjYiLCJ1c2VybmFtZSI6Imx1bHV3ZXN0MiIsInJvbF9pZCI6Mn0.ztvlq0vrICe-cWa38hyaUdUI0yXipGjOVSAr_hwnRgY
 
 GET {{uri}}
 Authorization: Bearer {{token}}
@@ -40,9 +40,11 @@ POST http://localhost:9090/api/auth/login
 Content-Type: application/json
 
 {
-    "username": "luisaco2",
+    "username": "luluwest2",
     "password": "secure1D#"
 }
 ###
 
-DELETE  http://localhost:9090/api/auth/loggout/{1}
+DELETE  http://localhost:9090/api/auth/loggout/6
+#Authorization: Bearer {{token}}
+###
