@@ -6,9 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { MatInput } from "@angular/material/input";
 import { LoginForm } from '../../../shared/models/interfaces';
-//import { AuthService } from '../../../shared/services/auth.service';
 import { MatDialogRef } from '@angular/material/dialog';
-//import { Router } from '@angular/router';
+import { AuthService } from '../../../shared/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-frm-login',
@@ -19,10 +19,10 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class FrmLogin {
 
-  //private readonly srvAuth = inject(AuthService);
+  private readonly srvAuth = inject(AuthService);
 
   dialogRef = inject(MatDialogRef<FrmLogin>)
-  //private readonly router = inject(Router);
+  private readonly router = inject(Router);
   public mostrarError = signal(false);
   objLogin = signal<LoginForm>( {
     username : '',
@@ -39,26 +39,25 @@ export class FrmLogin {
       action: async () => {
       //action: async f => {
 
-/*         console.log(f().value());
-        this.login(f().value()); */
-        this.dialogRef.close(this.objLogin());
+       //  console.log(f().value());
+        this.login(this.objLogin());
+        //this.dialogRef.close(this.objLogin());
 
       }
     }
   }
 );
 login(datos : LoginForm) {
-/*     this.srvAuth.login(datos)
+     this.srvAuth.login(datos)
       .subscribe({
         next: (res) => {
-          if (res && res != 401) {
+          if (res && res !== 401) {
             this.dialogRef.close();
             this.router.navigate(['/home']);
+          } else {
+            this.mostrarError.set(true);
           }
-        },
-        error: () => {
-          this.mostrarError.set(true);
         }
-      }) */
+      })
 }
 }

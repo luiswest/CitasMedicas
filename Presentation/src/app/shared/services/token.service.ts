@@ -23,7 +23,7 @@ export class TokenService {
   public get refreshToken() : any {
     return localStorage.getItem(this.REFRESH_TOKEN);
   }
-  public eliminarTokens() : void  {
+  public removeTokens() : void  {
     localStorage.removeItem(this.JWT_TOKEN);
     localStorage.removeItem(this.REFRESH_TOKEN);
   }

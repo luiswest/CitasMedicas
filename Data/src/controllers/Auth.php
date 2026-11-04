@@ -13,8 +13,7 @@ final class Auth
 {
     public function __construct(private ContainerInterface $container) {}
 
-    public function credentials(Request $request, Response $response): Response
-    {
+    public function credentials(Request $request, Response $response): Response {
         $data = $request->getParsedBody();
         $data = is_array($data) ? $data : [];
         $username = trim((string) ($data['username'] ?? ''));
@@ -45,8 +44,7 @@ final class Auth
         return $this->json($response, ['msj' => 'Token refresco modificado'], 200);
     }  
 
-    private function json(Response $response, array $payload, int $status): Response
-    {
+    private function json(Response $response, array $payload, int $status): Response {
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
         return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus($status);
     }

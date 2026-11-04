@@ -11,13 +11,10 @@
             </button>
         </div>
         <mat-menu #menu="matMenu">
-            <!--button mat-menu-item [routerLink]="['/login']" [hidden]="this.authService.isLoggedIn()">Iniciar Sesión</button-->
-            <button mat-menu-item>Iniciar Sesión</button>
-            <!--button mat-menu-item (click)="logOut();" [hidden]="!this.authService.isLoggedIn()">Cerrar Sesión</button-->
-            <button mat-menu-item>Cerrar Sesión</button>
+            <button mat-menu-item [routerLink]="['/login']" [hidden]="this.authService.isLoggedIn()">Iniciar Sesión</button>
+            <button mat-menu-item (click)="loggout();" [hidden]="!this.authService.isLoggedIn()">Cerrar Sesión</button>
             <mat-divider></mat-divider>
-            <!--button mat-menu-item [routerLink]="['/changePassw']" [hidden]="!this.authService.isLoggedIn()" >Cambiar contraseña</button-->
-            <button mat-menu-item >Cambiar contraseña</button>
+            <button mat-menu-item [routerLink]="['/changePassw']" [hidden]="!this.authService.isLoggedIn()" >Cambiar contraseña</button>
         </mat-menu>
     </mat-toolbar>
 

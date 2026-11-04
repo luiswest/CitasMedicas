@@ -41,10 +41,10 @@ export class App {
     {label: 'Cancelar Cita', icon: 'event_busy', route: 'cancelarcita', rol: [0, 1, 2]}
   ]);
   @HostListener("window:beforeunload") unloadHandler() {
-    this.logout()
+    this.loggout()
   }
-  logout(){
-    this.authService.logout();
+  loggout(){
+    this.authService.loggout();
   }
   logeado() : boolean {
     return this.authService.isLoggedIn(); //ponerlo directo en el html

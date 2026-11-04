@@ -35,9 +35,6 @@ login(datos : LoginForm) {
           if (res && res != 401) {
             this.router.navigate(['/home']);
           }
-        },
-        error: () => {
-          // this.mostrarError.set(true);
         }
       }) 
 }  
