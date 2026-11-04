@@ -45,6 +45,6 @@ Content-Type: application/json
 }
 ###
 
-DELETE http://localhost:9090/api/auth/loggout/10
+DELETE http://localhost:9090/api/auth/loggout/13
 
 ###

@@ -59,9 +59,10 @@ $errorMiddleware->setErrorHandler(AuthorizationException::class,
 	}
 );
 
-$app->add(function (ServerRequestInterface $request, RequestHandlerInterface $handler) use ($app): ResponseInterface {
+ $app->add(function (ServerRequestInterface $request, RequestHandlerInterface $handler) use ($app): ResponseInterface {
 	$origin = $request->getHeaderLine('Origin');
-	$allowedOrigin = $_ENV['CORS_ALLOWED_ORIGIN'] ?? 'http://localhost:4200';
+	//var_dump($origin); // Para depuración, puedes eliminarlo en producción
+	$allowedOrigin = $_ENV['CORS_ALLOWED_ORIGIN'] ?? 'http://localhost:4200'; // Cambia esto según tu configuración
 
 	if ($request->getMethod() === 'OPTIONS' && $origin === $allowedOrigin) {
 		$response = $app->getResponseFactory()->createResponse(204);
@@ -78,6 +79,27 @@ $app->add(function (ServerRequestInterface $request, RequestHandlerInterface $ha
 		->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
 		->withHeader('Access-Control-Allow-Headers', 'Accept, Authorization, Content-Type, Origin, X-Requested-With')
 		->withHeader('Vary', 'Origin');
+}); 
+/*
+$app->add(function (ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
+    $response = $handler->handle($request);
+    
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+        ->withHeader('Access-Control-Allow-Credentials', 'true');
 });
+*/
+// Capturar explícitamente todas las peticiones OPTIONS (Preflight)  
+// //Es necesario para que funcione correctamente el CORS en algunos navegadores
+ $app->options('/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+return $response->withStatus(204);
+ return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+        ->withHeader('Access-Control-Allow-Credentials', 'true');
+}); 
 
 $app->run();

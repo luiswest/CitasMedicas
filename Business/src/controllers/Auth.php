@@ -11,10 +11,31 @@ use App\Services\DataService;
 
 final class Auth
 {
-    public function __construct(private ContainerInterface $container) {}
+    public function __construct(private ContainerInterface $container) { }
+    private function generateTokens(string $id, string $username, int $rol_id): array {
+        $now = time();
+        $config = $this->container->get('config');
+        $payload = [
+            'iss' => 'citas-medicas-business',
+            'iat' => $now,
+            'exp' => $now + $config->jwt_ttl,
+            'sub' => $id,
+            'username' => $username,
+            'rol_id' => $rol_id,
+        ];
+            $payloadRef = [
+            'iss' => 'citas-medicas-business',
+            'iat' => $now,
+            'sub' => $id,
+        ];
+        return [
+            'token' => JWT::encode($payload, $config->key, 'HS256'),
+            'tkRef' => JWT::encode($payloadRef, $config->key, 'HS256'),
+        ];
+    }
 
-    public function login(Request $request, Response $response): Response
-    {
+    public function login(Request $request, Response $response): Response {
+        $request->getBody()->rewind();{
         $data = $request->getParsedBody();
         $data = is_array($data) ? $data : [];
         $username = trim((string) ($data['username'] ?? ''));
@@ -22,7 +43,7 @@ final class Auth
 
         if ($username === '' || $password === '') {
             return $this->json($response, [
-                'error' => 'El username y la contraseña son obligatorios.',
+                'error' => 'El usuario y la contraseña son obligatorios.',
             ], 422);
         }
         
@@ -34,8 +55,6 @@ final class Auth
             ], JSON_THROW_ON_ERROR));
             
             $credentials = json_decode((string) $upstream->getBody(), true);
-        //    var_dump($credentials);
-            //var_dump($upstream->getStatusCode()); die();
 
             if ($upstream->getStatusCode() !== 200 || !is_array($credentials)) {
                 return $this->json($response, [
@@ -43,34 +62,14 @@ final class Auth
                 ], 401);
             }
 
-            $now = time();
-            $config = $this->container->get('config');
-            $payload = [
-                'iss' => 'citas-medicas-business',
-                'iat' => $now,
-                'exp' => $now + $config->jwt_ttl,
-                'sub' => (string) $credentials['id'],
-                'username' => $credentials['username'],
-                'rol_id' => (int) $credentials['rol_id'],
-            ];
-              $payloadRef = [
-                'iss' => 'citas-medicas-business',
-                'iat' => $now,
-                'sub' => (string) $credentials['id'],
-            ];
-            
-            $token = JWT::encode($payload, $config->key, 'HS256');
-            $tkRef = JWT::encode($payloadRef, $config->key, 'HS256');
-            
+            $tokens = $this->generateTokens((string)$credentials['id'], $credentials['username'], $credentials['rol_id']);
+
             //hay que guardar el token de refresco
-             $upstream = $service->put('auth/tkref/'.$credentials['id'], json_encode([
-                'tkRef' => $tkRef
-            ], JSON_THROW_ON_ERROR));
- 
-            return $this->json($response, [
-                'token' => JWT::encode($payload, $config->key, 'HS256'),
-                'tkRef' => JWT::encode($payloadRef, $config->key, 'HS256')
-                ],200);
+//            $this->saveTokenRefresh((string)$credentials['id'], $tokens['tkRef']);
+            $upstream = $service->put('auth/tkref/'.$credentials['id'], json_encode(
+                ['tkRef' => $tokens['tkRef']], JSON_THROW_ON_ERROR));
+            
+            return $this->json($response, $tokens,200);
         } catch (ConnectException) {
             return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
         } catch (RequestException) {
@@ -80,11 +79,10 @@ final class Auth
     public function loggout(Request $request, Response $response, $args): Response {
         try {
                 $service = $this->container->get(DataService::class);
-                $upstream = $service->put('auth/tkref/'.$args['id'], json_encode([
-                    'tkRef' => ""
-                ], JSON_THROW_ON_ERROR)); 
-                 
-                return $this->json($response, ['msj' => "Sesión cerrada"], 200);
+                //$this->saveTokenRefresh($credentials['id'], $tokens['tkRef']);
+                $upstream = $service->put('auth/tkref/'.$args['id'], json_encode(
+                ['tkRef' => ""], JSON_THROW_ON_ERROR));  
+                return $this->json($response, ['message' => 'Sesión cerrada correctamente.'],200);              
 
         } catch (ConnectException) {
             return $this->json($response, ['error' => 'El servicio de datos no está disponible.'], 502);
@@ -92,7 +90,25 @@ final class Auth
             return $this->json($response, ['error' => 'No se pudo consultar el servicio de datos.'], 502);
         }   
     }
+    
+    public function refresh(Request $request, Response $response, array $args) {
+        $body = json_decode($request->getBody());
+                 
+        $datos = $this->verificarToken($args['id'], $body->tkRef);        
+        
+        $body = json_decode($datos['body']);
+        $status = json_decode($datos['status']);
+     
+         if ($status === 200) {
+            $tokens = $this->generarToken($args['id'], $body->rol);
+            $this->modificarToken(cedula: $args['id'], tkRef: $tokens['tkRef']);
 
+            $response->getBody()->write(json_encode($tokens));
+        }
+       return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus($status);
+    }    
     private function json(Response $response, array $payload, int $status): Response
     {
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
