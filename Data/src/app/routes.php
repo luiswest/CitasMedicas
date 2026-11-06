@@ -20,7 +20,9 @@ $app->group('/api', function(RouteCollectorProxy $api) {
     $api->group('/auth', function(RouteCollectorProxy $endpoint) {
         $endpoint->post('/credentials', Auth::class . ':credentials');  
         $endpoint->put('/tkref/{id}', Auth::class . ':updateTokenRef');
+        $endpoint->post('/verify_token/{id}', Auth::class . ':verifyToken');
     });
+   
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');
         $endpoint->get('/filter/{offset}/{limit}', Medico::class . ':filter');

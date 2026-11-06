@@ -46,5 +46,12 @@ Content-Type: application/json
 ###
 
 DELETE http://localhost:9090/api/auth/loggout/13
+###
 
+POST http://localhost:9090/api/auth/refresh-session/13
+Content-Type: application/json
+
+{
+    "tkRef": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjaXRhcy1tZWRpY2FzLWJ1c2luZXNzIiwiaWF0IjoxNzkzOTY1OTkyLCJzdWIiOjEzfQ.xINx00twOGb4XYAsUEoStZq4ZAVuhv8ma4_Kt1bIdO4"
+}
 ###

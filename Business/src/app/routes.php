@@ -7,6 +7,7 @@ $app->group('/api', function(RouteCollectorProxy $api) {
     $api->group('/auth', function(RouteCollectorProxy $endpoint) {
         $endpoint->post('/login', Auth::class . ':login');
         $endpoint->delete('/loggout/{id}', Auth::class . ':loggout');
+        $endpoint->post('/refresh-session/{id}', Auth::class . ':refreshSession');
     });
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');
