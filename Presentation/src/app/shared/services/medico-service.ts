@@ -42,7 +42,8 @@ export class MedicoService {
   });
 
   filtrar(parametros: ParametrosMedico): void {
-    this.parametros.set(parametros);
+    // ...parametros usando el operador spread para crear un nuevo objeto y evitar mutaciones
+    this.parametros.set({ ...parametros });
   }
 
   buscarPorId(id: number): void {

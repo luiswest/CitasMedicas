@@ -4,6 +4,29 @@
     <mat-card-title class="font-extrabold! text-[1.5rem]!">Catálogo Médicos</mat-card-title>
   </mat-card-header>
   <mat-card-content class="relative overflow-x-auto shadow-sm sm:rounded-lg">
+      <mat-expansion-panel [expanded]="panelFilterState()" hideToggle (opened)="panelFilterState.set(true)" 
+        (closed)="panelFilterState.set(false); onFilterClose();" class="mb-2! mt-2!">
+        <mat-expansion-panel-header>
+          <mat-panel-title> Filtrar - Click para {{panelFilterState() ? 'cerrar' : 'abrir'}} </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-panel-description> 
+            <mat-form-field  class="example-full-width">
+              <mat-label>Nombre</mat-label>
+              <input matInput [formField]="frmFilter.nombre" (input)="onFilterChange();">
+            </mat-form-field>
+
+            <mat-form-field class="example-full-width">
+              <mat-label>Especialidad</mat-label>
+              <input matInput [formField]="frmFilter.especialidad" (input)="onFilterChange();">
+            </mat-form-field>
+
+            <mat-form-field class="example-full-width">
+              <mat-label>Licencia</mat-label>
+              <input matInput [formField]="frmFilter.licencia" (input)="onFilterChange();">
+            </mat-form-field>
+
+        </mat-panel-description>
+      </mat-expansion-panel>
 
     <table mat-table [dataSource]="dataSource()" class="mat-shadow-2">
 
@@ -70,8 +93,10 @@
   </mat-card-content>
 </div>
   <mat-card-footer class="flex justify-end p-3">
-    <button matFab extended class="mr-2">Filtrar <mat-icon>filter_list</mat-icon></button>
-    <button matFab extended>Imprimir <mat-icon>printer</mat-icon></button>
+    <button matFab extended (click)="toggleFilterPanel()" class="mr-2">
+      {{ panelFilterState() ? 'Ocultar filtro' : 'Filtrar' }}
+      <mat-icon>filter_list</mat-icon></button>
+    <button matFab extended (click)="onPrint()">Imprimir <mat-icon>printer</mat-icon></button>
   </mat-card-footer>
 </mat-card>
 

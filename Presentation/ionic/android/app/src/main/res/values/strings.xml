@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Citas Médicas</string>
+    <string name="title_activity_main">Citas Médicas</string>
+    <string name="package_name">cr.ucr.citasmedicas</string>
+    <string name="custom_url_scheme">cr.ucr.citasmedicas</string>
+</resources>

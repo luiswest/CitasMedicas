@@ -48,6 +48,23 @@ describe('MedicoComponent', () => {
     expect(rows[0].textContent).toContain('LIC-123');
   });
 
+  it('should open and close the filter panel from the filter button', () => {
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button');
+    const filterButton = Array.from(buttons).find((button) => button.textContent?.includes('Filtrar'));
+    const panel = fixture.nativeElement.querySelector('mat-expansion-panel');
+
+    expect(filterButton).toBeDefined();
+    filterButton?.click();
+    fixture.detectChanges();
+    expect(component.panelFilterState()).toBe(true);
+    expect(panel.classList).toContain('mat-expanded');
+
+    filterButton?.click();
+    fixture.detectChanges();
+    expect(component.panelFilterState()).toBe(false);
+    expect(panel.classList).not.toContain('mat-expanded');
+  });
+
   it('should fetch the doctor by ID and pass it to the edit form', async () => {
     const mostrarDialogo = vi.spyOn(component, 'mostrarDialogo');
 
@@ -59,7 +76,6 @@ describe('MedicoComponent', () => {
     await fixture.whenStable();
 
     expect(component.buscarID()).toBe(medico.id);
-    expect(component.medicoSeleccionado()).toEqual(medico);
     expect(mostrarDialogo).toHaveBeenCalledWith('Editar Médico', medico, false, medico.id);
   });
 });

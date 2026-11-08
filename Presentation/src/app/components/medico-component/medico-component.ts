@@ -8,17 +8,27 @@ import { MedicoCreateInput, MedicoModel } from '../../shared/models/medico-model
 import { FrmMedico } from '../forms/frm-medico/frm-medico';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { DialogoGeneral } from '../forms/dialogo-general/dialogo-general';
-
+import { PrintService } from '../../shared/services/print.service';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { form, FormField } from '@angular/forms/signals';
+type FilterForm = {
+  nombre: string;
+  especialidad: string;
+  licencia: string;
+};
 @Component({
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTableModule, MatDialogModule],
+  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTableModule, 
+    MatDialogModule, MatExpansionModule, MatFormFieldModule, MatInputModule,
+  FormField],
   selector: 'app-medico-component',
   styleUrl: './medico-component.css',
   templateUrl: './medico-component.html',
 })
 export class MedicoComponent implements OnInit {
   buscarID = signal<number | null>(null);
-  //medicoSeleccionado = signal<MedicoModel | null>(null);
-  filtro : { nombre: string; cedula: string; especialidad: string } = { nombre: '', cedula: '', especialidad: '' };
+  filtro : { nombre: string; cedula: string; especialidad: string} = { nombre: '', cedula: '', especialidad: ''};
   displayedColumns: string[] = [
     'id',
     'nombre_completo',
@@ -27,11 +37,24 @@ export class MedicoComponent implements OnInit {
     'telefono',
     'botonera'
   ];
-
   dataSource = signal<MedicoModel[]>([]);
-
   srvMedico = inject(MedicoService);
+  private readonly srvPrint = inject(PrintService);
   dialog = inject(MatDialog);
+  panelFilterState = signal(false);
+
+  objFilter = signal<FilterForm>({
+    nombre : '',
+    especialidad : '',
+    licencia: ''
+  });
+
+  frmFilter = form(this.objFilter, (s) => {
+    s.nombre;
+    s.especialidad;
+    s.licencia;
+  });  
+
 
   constructor() {
     effect(() => {
@@ -52,16 +75,8 @@ export class MedicoComponent implements OnInit {
 
       if (respuesta.status() === 'resolved') {
         const medico = respuesta.value()?.data;
-/*         if (medico === null) {
-         // this.medicoSeleccionado.set(null);
-          alert('No se encontró el médico');
-          return;
-        }
-        if (medico?.id !== id) {
-          return;
-        } */
 
-        //this.medicoSeleccionado.set(medico);
+
         this.mostrarDialogo('Editar Médico', medico!, false, id);
       } else if (respuesta.status() === 'error') {
         console.error(`No se pudo buscar el médico con ID ${id}:`, respuesta.error());
@@ -70,7 +85,7 @@ export class MedicoComponent implements OnInit {
     });
   }
   private resetearFiltro() {
-    this.filtro = { nombre: '', cedula: '', especialidad: '' };
+    this.filtro = { nombre: '', cedula: '', especialidad: ''};
     this.filtrarMedicos();
   }
   private filtrarMedicos() {
@@ -126,18 +141,19 @@ export class MedicoComponent implements OnInit {
       });
     });
   } //Fin de mostrarDialogo  
+
   onCreate() {
     this.buscarID.set(null);
-  //  this.medicoSeleccionado.set(null);
+
     this.mostrarDialogo('Nuevo Médico');
   }
   onEdit(id: number) {
     this.buscarID.set(id);
-   // this.medicoSeleccionado.set(null);
+
     this.srvMedico.buscarPorId(id);
   }
   onInfo(medico: number) {
-    //this.mostrarDialogo('Ver Cliente', medico, true);
+
     console.log('Ver cliente:', medico);
   }
   onDelete(medico: number) {
@@ -148,6 +164,33 @@ export class MedicoComponent implements OnInit {
     // Implementar la lógica para restablecer la contraseña del cliente
     console.log('Restablecer contraseña del cliente:', medico);
   }
+  onPrint(): void {
+    const columnas = ['Id', 'Nombre', 'Especialidad', 'Licencia', 'Teléfono'];
+    const filas = this.dataSource().map((fila) => [
+      fila.id?.toString() ?? '',
+      fila.nombre_completo,
+      fila.especialidad_nombre ?? '',
+      fila.licencia ?? '',
+      fila.telefono ?? '',
+      fila.username ?? ''
+    ]);
+    this.srvPrint.print(columnas, filas, 'Catálogo de médicos');
+  }
+  onFilterClose() {
+
+  }
+  toggleFilterPanel(): void {
+    this.panelFilterState.update((isOpen) => !isOpen);
+  }
+
+  onFilterChange() {
+    this.filtro.nombre = this.objFilter().nombre;
+    this.filtro.especialidad = this.objFilter().especialidad;
+    this.filtro.cedula = this.objFilter().licencia;
+    // console.log(this.filtro);
+    this.filtrarMedicos();
+  }
+
   ngOnInit(): void {
     this.resetearFiltro();
   }
