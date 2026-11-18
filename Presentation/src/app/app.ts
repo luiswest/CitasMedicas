@@ -1,4 +1,7 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { map } from 'rxjs';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,6 +31,15 @@ type MenuItem = {
 export class App {
   protected readonly title = signal('Presentation');
   protected readonly authService = inject(AuthService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+
+  // true cuando el dispositivo es móvil (pantalla angosta, < 960px)
+  protected readonly isMobile = toSignal(
+    this.breakpointObserver
+      .observe([Breakpoints.XSmall, Breakpoints.Small])
+      .pipe(map(result => result.matches)),
+    { initialValue: false }
+  );
 
   menuItems: MenuItem[] = [
     {label: 'Inicio', icon: 'home', route:'home', rol :[1 , 2, 3]},

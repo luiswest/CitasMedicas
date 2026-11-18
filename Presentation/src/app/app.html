@@ -19,13 +19,15 @@
     </mat-toolbar>
 
     <mat-sidenav-container class="container">
-        <mat-sidenav #sidenav mode="side" class="sidenav" [opened]="authService.isLoggedIn()">
+        <mat-sidenav #sidenav class="sidenav"
+            [mode]="isMobile() ? 'over' : 'side'"
+            [opened]="authService.isLoggedIn() && !isMobile()">
             <mat-nav-list>
                 <mat-list-item class="bg-amber-500">Luis West</mat-list-item>
                 <hr>
                 @for(item of menuItems; track item.label) {
                     <mat-list-item>
-                        <a href="" [routerLink]="item.route">
+                        <a href="" [routerLink]="item.route" (click)="isMobile() && sidenav.close()">
                             <mat-icon>{{item.icon}}</mat-icon>
                             {{item.label}}
                         </a>

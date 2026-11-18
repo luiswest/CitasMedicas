@@ -10,7 +10,9 @@
     align-items: center;
     justify-content: center;
     width: 200px;
-    background-color: rgba(4,42,211,0.265);
+    /* color sólido (equivale a rgba(4,42,211,0.265) sobre blanco) para que
+       en modo 'over' no se vea el contenido de fondo */
+    background-color: rgb(189, 199, 243);
 }
 section {
     display : flex;
