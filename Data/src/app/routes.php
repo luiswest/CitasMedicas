@@ -17,7 +17,12 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
 });
 
 $app->group('/api', function(RouteCollectorProxy $api) {
-    $api->post('/auth/credentials', Auth::class . ':credentials');    
+    $api->group('/auth', function(RouteCollectorProxy $endpoint) {
+        $endpoint->post('/credentials', Auth::class . ':credentials');  
+        $endpoint->put('/tkref/{id}', Auth::class . ':updateTokenRef');
+        $endpoint->post('/verify_token/{id}', Auth::class . ':verifyToken');
+    });
+   
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');
         $endpoint->get('/filter/{offset}/{limit}', Medico::class . ':filter');
@@ -33,7 +38,12 @@ $app->group('/api', function(RouteCollectorProxy $api) {
         $endpoint->delete('/{id}', Paciente::class . ':delete');
     });
     $api->group('/citas', function(RouteCollectorProxy $endpoint) {
-        $endpoint->get('/paciente[/{id}]', Citas::class . ':read');
+        $endpoint->get('/paciente/{id}', Citas::class . ':readPaciente');
+        $endpoint->get('/medico/{id}', Citas::class . ':readMedico');
         $endpoint->post('', Citas::class . ':create');
+        $endpoint->put('/{id}', Citas::class . ':update'); //modificar cita: fecha/hora, doctor, paciente
+        $endpoint->patch('/cancel/{id}', Citas::class . ':cancel'); //cancelar cita
+        $endpoint->patch('/estado/{id}', Citas::class . ':updateEstado'); //actualizar estado de la cita
+        $endpoint->delete('/{id}', Citas::class . ':delete');
     });
 });

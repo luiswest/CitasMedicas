@@ -213,12 +213,12 @@ class Medico {
             }
 
             if (isset($data['licencia'])) {
-                $specialty_Id = trim((string) $data['especialidad_id']);
-             
+                $license = trim((string) $data['licencia']);
+
                 if ($license === '' || mb_strlen($license) > 50) {
-                    return $this->json($response, ['error' => 'Especialidad inválida.'], 422);
+                    return $this->json($response, ['error' => 'Licencia inválida.'], 422);
                 }
-                $medico->especialidad_id = $specialty_Id;
+                $medico->licencia = $license;
             }            
             $medico->save();
 

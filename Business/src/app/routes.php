@@ -4,7 +4,11 @@ namespace App\controllers;
 use Slim\Routing\RouteCollectorProxy;
 
 $app->group('/api', function(RouteCollectorProxy $api) {
-    $api->post('/auth/login', Auth::class . ':login');
+    $api->group('/auth', function(RouteCollectorProxy $endpoint) {
+        $endpoint->post('/login', Auth::class . ':login');
+        $endpoint->delete('/loggout/{id}', Auth::class . ':loggout');
+        $endpoint->post('/refresh-session/{id}', Auth::class . ':refreshSession');
+    });
     $api->group('/medicos', function(RouteCollectorProxy $endpoint) {
         $endpoint->get('[/{id}]', Medico::class . ':read');
         $endpoint->get('/filter/{offset}/{limit}', Medico::class . ':filter');
@@ -20,7 +24,9 @@ $app->group('/api', function(RouteCollectorProxy $api) {
         $endpoint->delete('/{id}', Paciente::class . ':delete');
     });
     $api->group('/citas', function(RouteCollectorProxy $endpoint) {
-        $endpoint->get('/paciente[/{id}]', Citas::class . ':read');
+        $endpoint->get('/paciente/{id}', Citas::class . ':readPaciente');
+        $endpoint->get('/medico/{id}', Citas::class . ':readMedico');
         $endpoint->post('', Citas::class . ':create');
+        $endpoint->put('/{id}', Citas::class . ':update');
     });
 });

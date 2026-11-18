@@ -1,2 +1,5 @@
 mysql/
-Business/vendor/
+
+**/vendor/
+**/RestRequest/
+node_modules/

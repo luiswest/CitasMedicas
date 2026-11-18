@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\controllers;
 
 use Illuminate\Database\QueryException;
+use App\Models\CitasModel;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -21,33 +22,12 @@ class Citas
         $data = $request->getParsedBody();
         $data = is_array($data) ? $data : [];
 
-        $patientId = filter_var($data['paciente_id'] ?? null, FILTER_VALIDATE_INT);
-        $doctorId = filter_var($data['medico_id'] ?? null, FILTER_VALIDATE_INT);
+        $patientId = $data['paciente_id'] ?? null;
+        $doctorId = $data['medico_id'] ?? null;
         $dateTime = trim((string) ($data['fecha_hora'] ?? ''));
         $reason = isset($data['motivo']) ? trim((string) $data['motivo']) : null;
-
-        $errors = [];
-        if ($patientId === false || $patientId < 1) {
-            $errors['paciente_id'] = 'Debe ser un entero positivo.';
-        }
-        if ($doctorId === false || $doctorId < 1) {
-            $errors['medico_id'] = 'Debe ser un entero positivo.';
-        }
-        $parsedDateTime = \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $dateTime);
-        $dateErrors = \DateTimeImmutable::getLastErrors();
-        if (
-            $parsedDateTime === false
-            || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
-            || $parsedDateTime->format('Y-m-d H:i:s') !== $dateTime
-        ) {
-            $errors['fecha_hora'] = 'Debe tener el formato Y-m-d H:i:s.';
-        }
         if ($reason !== null && $reason === '') {
             $reason = null;
-        }
-
-        if ($errors !== []) {
-            return $this->json($response, ['errors' => $errors], 422);
         }
 
         try {
@@ -70,21 +50,69 @@ class Citas
         return $this->json($response, ['message' => $message], 201);
     }
 
-    public function read(Request $request, Response $response, array $args): Response
+    public function readPaciente(Request $request, Response $response, array $args): Response
     {
-        $patientId = filter_var($args['id'] ?? $request->getQueryParams()['paciente_id'] ?? null, FILTER_VALIDATE_INT);
-        if ($patientId === false || $patientId < 1) {
-            return $this->json($response, ['error' => 'paciente_id debe ser un entero positivo.'], 422);
-        }
+        $patientId = $args['id'] ?? $request->getQueryParams()['paciente_id'] ?? null;
 
         $eloquent = $this->container->get('eloquent');
         $citas = $eloquent->connection()->select(
             'CALL sp_obtener_citas_paciente(?)',
             [$patientId]
         );
-
-        return $this->json($response, ['data' => $citas], 200);
+        $status = sizeOf($citas) > 0 ? 200 : 404;
+        return $this->json($response, ['data' => $citas], $status);
     }
+    public function readMedico(Request $request, Response $response, array $args): Response
+    {
+        $doctorId = $args['id'] ?? $request->getQueryParams()['medico_id'] ?? null;
+
+        $eloquent = $this->container->get('eloquent');
+        $citas = $eloquent->connection()->select(
+            'CALL sp_obtener_citas_medico(?)',
+            [$doctorId]
+        );
+        $status = sizeOf($citas) > 0 ? 200 : 404;
+        return $this->json($response, ['data' => $citas], $status);
+    }
+
+    public function update(Request $request, Response $response, array $args): Response
+    {
+        $eloquent = $this->container->get('eloquent');
+        $cita = CitasModel::find($args['id'] ?? null);
+        if ($cita === null) {
+            return $this->json($response, ['error' => 'Cita no encontrada.'], 404);
+        }
+
+        $data = $request->getParsedBody();
+        $data = is_array($data) ? $data : [];
+        $changes = array_intersect_key($data, array_flip(['paciente_id', 'medico_id', 'fecha_hora', 'motivo']));
+
+        $updatedDoctorId = $changes['medico_id'] ?? $cita->medico_id;
+        $updatedDateTime = $changes['fecha_hora'] ?? $cita->fecha_hora;
+        if (
+            $cita->estado === 'Programada'
+            && CitasModel::query()
+                ->where('medico_id', $updatedDoctorId)
+                ->where('fecha_hora', $updatedDateTime)
+                ->where('estado', 'Programada')
+                ->where('id', '<>', $cita->id)
+                ->exists()
+        ) {
+            return $this->json($response, ['error' => 'El médico ya tiene una cita programada en ese horario.'], 409);
+        }
+
+        try {
+            $cita->fill($changes);
+            $cita->save();
+        } catch (QueryException $exception) {
+            return $this->json($response, [
+                'error' => 'No fue posible actualizar la cita. Verifique que el paciente y el médico existan.',
+            ], 422);
+        }
+
+        return $this->json($response, ['data' => $cita->toArray()], 200);
+    }
+
 
     private function json(Response $response, array $payload, int $status): Response
     {
