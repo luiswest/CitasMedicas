@@ -1,0 +1,6 @@
+# Proxy público con HTTPS automático (Let's Encrypt).
+# DOMAIN viene de .env.prod; si está vacío, compose pasa ":80" (solo HTTP).
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy webpresentacion:80
+}

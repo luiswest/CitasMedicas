@@ -1,0 +1,131 @@
+# ==========================================================================
+#  Citas Médicas - despliegue de PRODUCCIÓN en una VM (Oracle Cloud, GCP, ...)
+#
+#  Uso:
+#    cp .env.prod.example .env.prod      # y editar los valores
+#    docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+#  Separación en capas (cada red solo une capas vecinas):
+#    Internet -> proxy(Caddy) -> webpresentacion -> webnegocio -> webdatos -> db
+#              red_publica        red_presentacion   red_negocio   red_datos
+#  Solo el proxy publica puertos; ninguna otra capa es accesible desde fuera.
+# ==========================================================================
+name: citasmedicas
+
+services:
+  db:
+    image: mysql:9.7
+    container_name: base_datos
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DATABASE: citas_medicas
+    volumes:
+      - ./db_dump:/docker-entrypoint-initdb.d:ro   # solo se ejecuta con el volumen vacío
+      - mysql_data:/var/lib/mysql
+    secrets:
+      - db_password
+    networks:
+      - red_datos
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  webdatos:
+    container_name: web_datos
+    build:
+      context: .
+      dockerfile: ./Data/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_NAME: citas_medicas
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      INTERNAL_KEY: ${INTERNAL_KEY:?Defina INTERNAL_KEY en .env.prod}
+    secrets:
+      - db_password
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - red_datos
+      - red_negocio
+
+  webnegocio:
+    container_name: web_negocio
+    build:
+      context: .
+      dockerfile: ./Business/Dockerfile
+    restart: unless-stopped
+    environment:
+      KEY: ${JWT_KEY:?Defina JWT_KEY en .env.prod}
+      API_DATA: http://webdatos/api
+      API_TIMEOUT: "10"
+      JWT_TTL: ${JWT_TTL:-3600}
+      INTERNAL_KEY: ${INTERNAL_KEY}
+      # Orígenes que pueden llamar a la API directamente (app Android/Capacitor).
+      # La web no lo necesita porque pasa por el proxy de nginx (mismo dominio).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,https://localhost,capacitor://localhost}
+    depends_on:
+      - webdatos
+    networks:
+      - red_negocio
+      - red_presentacion
+
+  webpresentacion:
+    container_name: web_presentacion
+    build:
+      context: ./Presentation
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      BUSINESS_URL: http://webnegocio
+    depends_on:
+      - webnegocio
+    networks:
+      - red_presentacion
+      - red_publica
+
+  proxy:
+    image: caddy:2-alpine
+    container_name: proxy_https
+    restart: unless-stopped
+    environment:
+      # Dominio público. Con un dominio real (o <ip>.sslip.io) Caddy obtiene
+      # el certificado HTTPS de Let's Encrypt automáticamente.
+      # Vacío -> ":80" (solo HTTP por el puerto 80).
+      DOMAIN: ${DOMAIN:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - webpresentacion
+    networks:
+      - red_publica
+
+networks:
+  red_publica:
+  red_presentacion:
+    internal: true
+  red_negocio:
+    internal: true
+  red_datos:
+    internal: true
+
+volumes:
+  mysql_data:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  db_password:
+    file: ./db_password.txt

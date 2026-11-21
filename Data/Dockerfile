@@ -1,24 +1,35 @@
+# ==========================================================================
+#  Capa de DATOS (Slim + PDO/Eloquent) - Dockerfile apto para producción
+#  Contexto de build: raíz del repositorio  ->  docker build -f Data/Dockerfile .
+# ==========================================================================
 FROM php:8.5-apache
-WORKDIR /var/www/html 
 
-RUN a2enmod rewrite
-RUN a2enmod actions
+WORKDIR /var/www/html
+
+RUN a2enmod rewrite actions headers
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-php -r "if (hash_file('sha384', 'composer-setup.php') === 'c8b085408188070d5f52bcfe4ecfbee5f727afa458b2573b8eaaf77b3419b0bf2768dc67c86944da1544f06fa544fd47') { echo 'Installer verified'.PHP_EOL; } else { echo 'Installer corrupt'.PHP_EOL; unlink('composer-setup.php'); exit(1); }" && \
-php composer-setup.php && \
-php -r "unlink('composer-setup.php');" && \
-mv composer.phar /usr/local/bin/composer
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git unzip ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY ./Data/composer.json .
-COPY ./Data/.env .
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
-RUN apt update && apt install -y zip
-RUN apt update && apt install -y git
+COPY ./Data/composer.json ./
+RUN composer install --no-dev --no-interaction --prefer-dist --no-autoloader
 
-RUN composer install
+COPY ./Data/public ./public
+COPY ./Data/src ./src
 
-RUN composer dump-autoload
+RUN composer dump-autoload --optimize --no-dev
 
-RUN sed -i 's/DocumentRoot.*$/DocumentRoot \/var\/www\/html\/public/' /etc/apache2/sites-enabled/000-default.conf
+RUN sed -i 's#DocumentRoot.*$#DocumentRoot /var/www/html/public#' /etc/apache2/sites-enabled/000-default.conf
+
+COPY ./Data/docker-entrypoint.sh /usr/local/bin/app-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/app-entrypoint && chmod +x /usr/local/bin/app-entrypoint
+
+ENV PORT=80
+EXPOSE 80
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["apache2-foreground"]

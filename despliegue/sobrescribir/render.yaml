@@ -1,0 +1,76 @@
+# ==========================================================================
+#  Blueprint de Render (https://render.com) - 3 servicios web gratuitos
+#  Va en la RAÍZ del repositorio. Render > New > Blueprint > elegir el repo.
+#  La base de datos MySQL se aloja aparte (Aiven, plan gratuito).
+#
+#  Los nombres generan URLs https://<name>.onrender.com. Si un nombre ya está
+#  ocupado Render agrega un sufijo: revise las URLs reales en el panel y
+#  corrija API_DATA y BUSINESS_URL si es necesario.
+# ==========================================================================
+services:
+  # ---------------- Capa de DATOS ----------------
+  - type: web
+    name: citas-datos
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerContext: .
+    dockerfilePath: ./Data/Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: DB_HOST
+        sync: false              # host de Aiven, p.ej. mysql-xxxx.aivencloud.com
+      - key: DB_PORT
+        sync: false              # puerto de Aiven, p.ej. 12345
+      - key: DB_USER
+        value: avnadmin
+      - key: DB_PASSW
+        sync: false
+      - key: DB_NAME
+        value: citas_medicas
+      - key: DB_SSL
+        value: "true"
+      - key: DB_SSL_CA
+        value: /etc/secrets/ca.pem   # subir ca.pem de Aiven como "Secret File"
+      - key: INTERNAL_KEY
+        generateValue: true
+
+  # ---------------- Capa de NEGOCIO ----------------
+  - type: web
+    name: citas-negocio
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerContext: .
+    dockerfilePath: ./Business/Dockerfile
+    envVars:
+      - key: KEY
+        generateValue: true
+      - key: API_DATA
+        value: https://citas-datos.onrender.com/api
+      - key: API_TIMEOUT
+        value: "60"              # el plan gratis "duerme": dar tiempo al arranque en frío
+      - key: JWT_TTL
+        value: "3600"
+      - key: INTERNAL_KEY
+        fromService:
+          type: web
+          name: citas-datos
+          envVarKey: INTERNAL_KEY
+      - key: CORS_ALLOWED_ORIGINS
+        value: http://localhost,https://localhost,capacitor://localhost
+
+  # ---------------- Capa de PRESENTACIÓN ----------------
+  - type: web
+    name: citas-medicas
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerContext: ./Presentation
+    dockerfilePath: ./Presentation/Dockerfile
+    envVars:
+      - key: BUSINESS_URL
+        value: https://citas-negocio.onrender.com

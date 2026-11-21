@@ -12,6 +12,7 @@ CREATE TABLE usuarios (
     password VARCHAR(255) NOT NULL,
     rol_id INT NOT NULL,
     activo BOOLEAN DEFAULT 1,
+    tkRef VARCHAR(255),
     FOREIGN KEY (rol_id) REFERENCES roles(id)
 );
 
@@ -99,6 +100,19 @@ BEGIN
     WHERE c.paciente_id = p_paciente_id
     ORDER BY c.fecha_hora DESC;
 END //
+
+-- SP para obtener citas de un paciente
+CREATE PROCEDURE sp_obtener_citas_medico(
+    IN m_medico_id INT
+)
+BEGIN
+    SELECT c.id, c.fecha_hora, c.estado, c.motivo, p.nombre_completo AS paciente
+    FROM citas c
+    INNER JOIN pacientes p ON c.paciente_id = p.id
+    WHERE c.medico_id = m_medico_id
+    ORDER BY c.fecha_hora DESC;
+END //
+
 DELIMITER ;
 
 -- Esto es temporal

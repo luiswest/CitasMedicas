@@ -1,23 +1,49 @@
+# ==========================================================================
+#  Capa de NEGOCIO (Slim + JWT) - Dockerfile apto para producción
+#  Contexto de build: raíz del repositorio  ->  docker build -f Business/Dockerfile .
+# ==========================================================================
 FROM php:8.5-apache
-WORKDIR /var/www/html 
 
-RUN a2enmod rewrite
-RUN a2enmod actions
+WORKDIR /var/www/html
 
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-php -r "if (hash_file('sha384', 'composer-setup.php') === 'c8b085408188070d5f52bcfe4ecfbee5f727afa458b2573b8eaaf77b3419b0bf2768dc67c86944da1544f06fa544fd47') { echo 'Installer verified'.PHP_EOL; } else { echo 'Installer corrupt'.PHP_EOL; unlink('composer-setup.php'); exit(1); }" && \
-php composer-setup.php && \
-php -r "unlink('composer-setup.php');" && \
-mv composer.phar /usr/local/bin/composer
+RUN a2enmod rewrite actions headers
 
-COPY ./Business/composer.json .
-COPY ./Business/.env .
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git unzip \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt update && apt install -y zip
-RUN apt update && apt install -y git
+# Composer oficial (evita el hash fijo del instalador, que se rompe cuando cambia)
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
-RUN composer install
+# 1 = instala dependencias de desarrollo (phpunit). En producción dejar en 0.
+#     Local:  docker compose build --build-arg COMPOSER_DEV=1 webnegocio
+ARG COMPOSER_DEV=0
 
-RUN composer dump-autoload
+COPY ./Business/composer.json ./Business/composer.lock ./
+RUN if [ "$COMPOSER_DEV" = "1" ]; then \
+        composer install --no-interaction --prefer-dist --no-autoloader; \
+    else \
+        composer install --no-dev --no-interaction --prefer-dist --no-autoloader; \
+    fi
 
-RUN sed -i 's/DocumentRoot.*$/DocumentRoot \/var\/www\/html\/public/' /etc/apache2/sites-enabled/000-default.conf
+# El código se COPIA dentro de la imagen (en producción no hay volúmenes)
+COPY ./Business/public ./public
+COPY ./Business/src ./src
+COPY ./Business/tests ./tests
+COPY ./Business/phpunit.xml ./
+
+RUN if [ "$COMPOSER_DEV" = "1" ]; then composer dump-autoload --optimize; \
+    else composer dump-autoload --optimize --no-dev; fi
+
+RUN sed -i 's#DocumentRoot.*$#DocumentRoot /var/www/html/public#' /etc/apache2/sites-enabled/000-default.conf
+
+# El .env NO se copia: se genera al arrancar a partir de variables de entorno
+COPY ./Business/docker-entrypoint.sh /usr/local/bin/app-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/app-entrypoint && chmod +x /usr/local/bin/app-entrypoint
+
+# Render / Cloud Run / Azure inyectan PORT; en Docker Compose se usa 80
+ENV PORT=80
+EXPOSE 80
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["apache2-foreground"]

@@ -8,9 +8,9 @@ $container->set('base_datos', function(ContainerInterface $c) {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false
-    ];
+    ] + $c->get('pdo_ssl_options');
 
-    $dsn = "mysql:host={$conf->host};dbname={$conf->database};charset={$conf->charset}";
+    $dsn = "mysql:host={$conf->host};port={$conf->port};dbname={$conf->database};charset={$conf->charset}";
 
     try {
         $conexion = new PDO($dsn, $conf->username, $conf->password, $opc);

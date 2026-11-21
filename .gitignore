@@ -2,3 +2,6 @@ mysql/
 
 **/vendor/
 **/RestRequest/
+node_modules/
+
+ca.pem

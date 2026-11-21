@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Despliegue paso a paso</title>
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f5; --text:#1b1f24; --muted:#5b6573;
+  --border:#d9dee5; --accent:#0b6bcb; --accent-soft:#e3effb; --ok:#1a7f4b; --ok-soft:#e4f5ec;
+  --warn:#9a5b00; --warn-soft:#fff3dc; --danger:#b42318; --danger-soft:#fdecea;
+  --why:#6d28d9; --why-soft:#f1ebfd;
+  --code-bg:#0f1720; --code-text:#e6edf3; --code-muted:#8b98a5;
+  --l1:#7c3aed; --l2:#0b6bcb; --l3:#0f8a6a; --l4:#c2410c;
+  --t-pc:#2563eb; --t-vm:#c2410c; --t-sql:#0f8a6a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1116; --surface:#161b22; --surface-2:#1f2630; --text:#e6edf3; --muted:#9aa6b2;
+    --border:#2d3640; --accent:#58a6ff; --accent-soft:#132a44; --ok:#3fb950; --ok-soft:#12291b;
+    --warn:#e3a33b; --warn-soft:#2e2310; --danger:#f47067; --danger-soft:#2f1716;
+    --why:#b794f6; --why-soft:#221a33;
+    --code-bg:#0a0d12; --code-text:#e6edf3; --code-muted:#7d8a97;
+    --l1:#a78bfa; --l2:#58a6ff; --l3:#34d399; --l4:#fb923c;
+    --t-pc:#60a5fa; --t-vm:#fb923c; --t-sql:#34d399;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --surface:#161b22; --surface-2:#1f2630; --text:#e6edf3; --muted:#9aa6b2;
+  --border:#2d3640; --accent:#58a6ff; --accent-soft:#132a44; --ok:#3fb950; --ok-soft:#12291b;
+  --warn:#e3a33b; --warn-soft:#2e2310; --danger:#f47067; --danger-soft:#2f1716;
+  --why:#b794f6; --why-soft:#221a33;
+  --code-bg:#0a0d12; --code-text:#e6edf3; --code-muted:#7d8a97;
+  --l1:#a78bfa; --l2:#58a6ff; --l3:#34d399; --l4:#fb923c;
+  --t-pc:#60a5fa; --t-vm:#fb923c; --t-sql:#34d399;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif}
+a{color:var(--accent)}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;font-size:.88em;background:var(--surface-2);padding:.1em .35em;border-radius:4px;overflow-wrap:anywhere}
+kbd{font-family:ui-monospace,Consolas,monospace;font-size:.85em;border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:.05em .4em;background:var(--surface)}
+header.top{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:10px 16px}
+header.top .brand{font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{appearance:none;border:1px solid var(--border);background:var(--surface-2);color:var(--text);padding:6px 12px;border-radius:8px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);max-width:1240px;margin:0 auto}
+nav.toc{position:sticky;top:57px;align-self:start;max-height:calc(100vh - 57px);overflow:auto;padding:20px 12px 40px 16px;border-right:1px solid var(--border);font-size:14px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 8px;border-radius:6px}
+nav.toc a:hover{background:var(--surface-2);color:var(--text)}
+nav.toc .grp{margin:14px 8px 4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+main{padding:24px 32px 80px;min-width:0}
+h1{font-size:2rem;line-height:1.2;margin:.2em 0 .3em}
+h2{font-size:1.5rem;margin:2.4em 0 .6em;padding-top:.6em;border-top:1px solid var(--border)}
+h3{font-size:1.15rem;margin:1.8em 0 .5em}
+h4{margin:1.2em 0 .3em}
+.lead{color:var(--muted);font-size:1.08rem;max-width:72ch}
+p,li{max-width:80ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.chip{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--muted)}
+.time{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600;margin-bottom:6px}
+.note{border-left:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:6px;margin:14px 0}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note.danger{border-color:var(--danger);background:var(--danger-soft)}
+.note.why{border-color:var(--why);background:var(--why-soft)}
+.note > strong:first-child{display:block;margin-bottom:2px}
+.note ul,.note ol{margin:.3em 0 0;padding-left:1.3em}
+.table-wrap{overflow-x:auto;margin:14px 0;border:1px solid var(--border);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px;background:var(--surface)}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{background:var(--surface-2);font-weight:600}
+tr:last-child td{border-bottom:0}
+.yes{color:var(--ok);font-weight:600}.no{color:var(--danger);font-weight:600}.mid{color:var(--warn);font-weight:600}
+pre{position:relative;background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:10px;overflow:auto;font:13.5px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;margin:12px 0}
+pre code{background:none;padding:0;font-size:inherit;color:inherit;overflow-wrap:normal}
+pre .c{color:var(--code-muted)}
+pre .lbl{position:absolute;top:6px;left:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-family:system-ui,sans-serif}
+pre .lbl.pc{color:var(--t-pc)} pre .lbl.vm{color:var(--t-vm)} pre .lbl.sql{color:var(--t-sql)} pre .lbl.out{color:var(--code-muted)}
+pre.has-lbl{padding-top:30px}
+pre.output{background:var(--surface-2);color:var(--text);border:1px dashed var(--border)}
+.copy{position:absolute;top:6px;right:6px;font-size:12px;padding:3px 9px;border-radius:6px;border:1px solid #3a4652;background:#1c2530;color:#cfd8e1;cursor:pointer}
+.copy:hover{background:#26313d}
+pre.output .copy{display:none}
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:2px 0 18px 46px;max-width:none}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+ol.steps>li>strong:first-child{display:block;margin-bottom:2px;font-size:1.03rem}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+.opt{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.opt:hover{border-color:var(--accent)}
+.opt .tag{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.opt h4{margin:4px 0 6px;font-size:1.05rem}
+.opt p{margin:0;color:var(--muted);font-size:14px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:16px 0}
+.gloss div{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.gloss dt{font-weight:700;margin-bottom:4px}
+.gloss dd{margin:0;color:var(--text);font-size:14.5px}
+.gloss dd em{color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.legend span{font-size:13px;padding:3px 10px;border-radius:6px;background:var(--code-bg);font-weight:700;font-family:system-ui,sans-serif}
+.diagram{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin:16px 0;overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:620px;height:auto}
+details.file,details.more{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin:10px 0}
+details.file summary,details.more summary{cursor:pointer;padding:10px 14px;font-weight:600}
+details.file summary{font-family:ui-monospace,Consolas,monospace;font-size:14px}
+details.more > div{padding:0 14px 10px}
+details.file pre{margin:0 10px 10px}
+details.file .dest{font-weight:400;color:var(--muted);font-family:system-ui,sans-serif;font-size:13px;margin-left:6px}
+.checklist li{list-style:none;margin-left:-22px}
+.checklist li::before{content:"☐ ";color:var(--accent)}
+.hint{display:inline-block;color:var(--muted);font-size:14px;margin:2px 0 6px}
+footer{color:var(--muted);font-size:13px;margin-top:60px;padding-top:16px;border-top:1px solid var(--border)}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav.toc{display:none}
+  main{padding:16px 16px 60px}
+  h1{font-size:1.6rem}
+  header.top .hide-sm{display:none}
+}
+@media print{
+  header.top,nav.toc,.copy{display:none!important}
+  .layout{display:block}
+  main{padding:0}
+  pre{white-space:pre-wrap;break-inside:avoid}
+  details{break-inside:avoid}
+  details:not([open]) > *:not(summary){display:block}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Citas Médicas · Despliegue paso a paso para principiantes</div>
+  <button class="btn hide-sm" id="btnTheme" type="button" title="Cambiar tema">◐ Tema</button>
+  <button class="btn hide-sm" type="button" onclick="window.print()">Imprimir / PDF</button>
+  <button class="btn primary" id="btnDownload" type="button">⬇ Descargar guía</button>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contenido">
+  <div class="grp">Empiece aquí</div>
+  <a href="#como-usar">Cómo usar esta guía</a>
+  <a href="#conceptos">Conceptos básicos</a>
+  <a href="#su-app">Cómo está hecha su aplicación</a>
+  <a href="#dev-vs-prod">Desarrollo vs. producción</a>
+  <div class="grp">Preparación</div>
+  <a href="#herramientas">1 · Instalar herramientas</a>
+  <a href="#paso0">2 · Aplicar los archivos nuevos</a>
+  <a href="#github">3 · Subir el proyecto a GitHub</a>
+  <a href="#prueba-local">4 · Probar en su computadora</a>
+  <a href="#elegir">5 · Elegir dónde publicar</a>
+  <div class="grp">Opciones de hosting</div>
+  <a href="#oracle">A · Oracle Cloud (VM)</a>
+  <a href="#aiven">Base de datos en Aiven</a>
+  <a href="#render">B · Render</a>
+  <a href="#cloudrun">C · Google Cloud Run</a>
+  <a href="#azure">D · Azure for Students</a>
+  <div class="grp">Al terminar</div>
+  <a href="#admin">Crear el usuario administrador</a>
+  <a href="#verificar">Comprobar que todo funciona</a>
+  <a href="#movil">App Android</a>
+  <a href="#logs">Leer los logs</a>
+  <a href="#problemas-comunes">Problemas comunes</a>
+  <a href="#seguridad">Checklist de seguridad</a>
+  <a href="#anexo">Anexo · Archivos</a>
+</nav>
+
+<main>
+<h1>Cómo publicar Citas Médicas en Internet, paso a paso</h1>
+<p class="lead">Guía para estudiantes que nunca han desplegado una aplicación. Explica qué hace cada paso, por qué se hace, qué debería ver en pantalla y qué hacer si algo sale mal. Al terminar, cualquier persona podrá abrir la aplicación desde su navegador o su teléfono.</p>
+<div class="meta">
+  <span class="chip">Nivel: principiante</span>
+  <span class="chip">Tiempo total: 2 a 4 horas</span>
+  <span class="chip">Costo: US$0</span>
+  <span class="chip">Versión 2 · 20 de noviembre de 2026</span>
+</div>
+
+<div class="note warn"><strong>Los planes gratuitos cambian</strong>Lo que esta guía dice sobre límites, tarjetas y nombres de botones corresponde a noviembre de 2026. Si una pantalla del proveedor se ve distinta, busque la opción con un nombre parecido; los conceptos no cambian.</div>
+
+<!-- =================================================================== -->
+<h2 id="como-usar">Cómo usar esta guía</h2>
+<p>Recorra las secciones en orden: cada una supone que terminó la anterior. Si se pierde, vuelva al último paso que funcionó.</p>
+
+<h3>Los bloques de comandos</h3>
+<p>Los comandos aparecen en recuadros oscuros con un botón <strong>Copiar</strong>. La etiqueta de la esquina dice <strong>dónde</strong> se ejecuta cada uno, y es importante respetarla:</p>
+<div class="legend">
+  <span style="color:var(--t-pc)">SU PC · POWERSHELL</span>
+  <span style="color:var(--t-vm)">SERVIDOR (VM) · UBUNTU</span>
+  <span style="color:var(--t-sql)">SQL</span>
+  <span style="color:var(--code-muted)">LO QUE DEBERÍA VER</span>
+</div>
+<ul>
+  <li><strong>SU PC · POWERSHELL</strong>: la terminal de su computadora con Windows. Lo más práctico es usar la terminal integrada de VS Code (menú <em>Terminal → New Terminal</em>), que ya se abre en la carpeta del proyecto.</li>
+  <li><strong>SERVIDOR (VM) · UBUNTU</strong>: comandos para la computadora en la nube, después de conectarse a ella por SSH (se explica en la opción A).</li>
+  <li><strong>LO QUE DEBERÍA VER</strong> (recuadro claro con borde punteado): no es un comando. Es un ejemplo de la respuesta esperada, para comparar con lo que muestra su pantalla.</li>
+</ul>
+
+<h3>Reglas para copiar comandos</h3>
+<ul>
+  <li>Lo que aparece en <strong>MAYÚSCULAS_CON_GUIONES_BAJOS</strong>, como <code>TU_USUARIO</code> o <code>IP_PUBLICA</code>, debe reemplazarlo por su propio valor antes de presionar <kbd>Enter</kbd>.</li>
+  <li>El texto gris que empieza con <code>#</code> es un comentario. La terminal lo ignora, así que puede copiarlo junto con el comando sin problema.</li>
+  <li>En PowerShell, una línea que termina con un acento grave <code>`</code> continúa en la línea siguiente. Copie el bloque completo.</li>
+  <li>Si un comando muestra un error en rojo, <strong>no siga con el siguiente paso</strong>. Busque el mensaje en <a href="#problemas-comunes">Problemas comunes</a>.</li>
+  <li>Pegar en la terminal: <kbd>Ctrl</kbd>+<kbd>V</kbd> en PowerShell y VS Code; clic derecho en la terminal SSH si <kbd>Ctrl</kbd>+<kbd>V</kbd> no funciona.</li>
+</ul>
+
+<!-- =================================================================== -->
+<h2 id="conceptos">Conceptos básicos (lea esto primero)</h2>
+<p>Desplegar tiene su propio vocabulario. Estos son los términos que aparecen en la guía, con una comparación cotidiana:</p>
+<dl class="gloss">
+  <div><dt>Desplegar (deploy)</dt><dd>Llevar la aplicación de su computadora a un servidor conectado a Internet para que otras personas la usen. <em>Como pasar de cocinar en casa a abrir un restaurante.</em></dd></div>
+  <div><dt>Servidor</dt><dd>Una computadora encendida las 24 horas en un centro de datos, que responde a las peticiones que llegan por Internet.</dd></div>
+  <div><dt>Máquina virtual (VM)</dt><dd>Una computadora «simulada» dentro de un servidor grande. Usted la controla como si fuera suya, pero vive en la nube.</dd></div>
+  <div><dt>Imagen de Docker</dt><dd>Un paquete que contiene su programa y todo lo que necesita para correr (PHP, Apache, librerías). <em>Es la receta y los ingredientes ya empacados.</em></dd></div>
+  <div><dt>Contenedor</dt><dd>Una imagen en ejecución. De una misma imagen pueden correr varios contenedores. <em>Si la imagen es la receta, el contenedor es el plato servido.</em></dd></div>
+  <div><dt>Dockerfile</dt><dd>Archivo de texto con las instrucciones para construir una imagen: «parte de PHP 8.5, instala esto, copia este código…».</dd></div>
+  <div><dt>Docker Compose</dt><dd>Herramienta que levanta varios contenedores a la vez y los conecta, a partir de un archivo <code>docker-compose.yml</code>. Hoy usted ya la usa en desarrollo.</dd></div>
+  <div><dt>Puerto</dt><dd>Un número que identifica cada servicio dentro de una computadora. La web usa el 80 (HTTP) y el 443 (HTTPS). <em>Si la IP es la dirección del edificio, el puerto es el número de apartamento.</em></dd></div>
+  <div><dt>Variable de entorno</dt><dd>Un valor de configuración que se entrega al programa desde fuera, sin escribirlo en el código. Por ejemplo <code>DB_HOST=db</code>.</dd></div>
+  <div><dt>Secreto</dt><dd>Una variable de entorno que nadie debe ver: contraseñas, llaves de JWT. Nunca se sube a GitHub.</dd></div>
+  <div><dt>Dirección IP</dt><dd>El número que identifica a una computadora en Internet, por ejemplo <code>152.70.12.34</code>.</dd></div>
+  <div><dt>Dominio y DNS</dt><dd>Un nombre fácil de recordar (<code>citas.ejemplo.com</code>) que el sistema DNS traduce a una IP. <em>Como la agenda de contactos del teléfono.</em></dd></div>
+  <div><dt>HTTPS y certificado</dt><dd>HTTPS cifra la comunicación entre el navegador y el servidor. Requiere un certificado, que Let's Encrypt emite gratis. Es lo que muestra el candado del navegador.</dd></div>
+  <div><dt>Proxy inverso</dt><dd>Un programa que recibe las peticiones y las reenvía al servicio correcto. En esta guía Nginx y Caddy cumplen ese papel. <em>Como la recepcionista que dirige a cada visitante a su oficina.</em></dd></div>
+  <div><dt>PaaS</dt><dd>«Plataforma como servicio»: usted entrega el código o la imagen y el proveedor se encarga del servidor. Render, Cloud Run y Azure Container Apps son PaaS.</dd></div>
+  <div><dt>Base de datos gestionada</dt><dd>Un MySQL que administra otra empresa (Aiven, en esta guía). Usted solo recibe la dirección, el usuario y la contraseña.</dd></div>
+  <div><dt>SSH</dt><dd>Forma segura de abrir una terminal en una computadora remota. Se usa para controlar la VM.</dd></div>
+  <div><dt>Repositorio y rama (Git)</dt><dd>El repositorio es el historial del proyecto; una rama es una línea de trabajo paralela. Se crea una rama <code>despliegue</code> para no afectar <code>main</code>.</dd></div>
+  <div><dt>Logs</dt><dd>Los mensajes que escribe un programa mientras corre. Son la primera fuente para averiguar por qué algo falla.</dd></div>
+</dl>
+
+<!-- =================================================================== -->
+<h2 id="su-app">Cómo está hecha su aplicación</h2>
+<p>Citas Médicas está dividida en <strong>capas</strong>, y cada capa corre en su propio contenedor. La idea de desplegarla es conservar esa separación también en Internet:</p>
+<div class="diagram" role="img" aria-label="Diagrama de capas: Internet, Presentación, Negocio, Datos y MySQL">
+<svg viewBox="0 0 980 270" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,Segoe UI,sans-serif">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+  <circle cx="60" cy="118" r="44" fill="var(--surface-2)" stroke="var(--border)"/>
+  <text x="60" y="114" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">Usuario</text>
+  <text x="60" y="131" text-anchor="middle" font-size="11" fill="var(--muted)">navegador · Android</text>
+  <rect x="170" y="50" width="190" height="136" rx="10" fill="var(--surface)" stroke="var(--l1)" stroke-width="2"/>
+  <text x="265" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="var(--l1)">1 · Presentación</text>
+  <text x="265" y="100" text-anchor="middle" font-size="12" fill="var(--text)">Angular + Nginx</text>
+  <text x="265" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">pantallas y formularios</text>
+  <text x="265" y="138" text-anchor="middle" font-size="11" fill="var(--muted)">reenvía /api a Negocio</text>
+  <text x="265" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="var(--l1)">ÚNICA capa pública</text>
+  <rect x="420" y="50" width="190" height="136" rx="10" fill="var(--surface)" stroke="var(--l2)" stroke-width="2"/>
+  <text x="515" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="var(--l2)">2 · Negocio</text>
+  <text x="515" y="100" text-anchor="middle" font-size="12" fill="var(--text)">PHP · Slim · JWT</text>
+  <text x="515" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">login, tokens, reglas</text>
+  <text x="515" y="138" text-anchor="middle" font-size="11" fill="var(--muted)">validaciones</text>
+  <rect x="670" y="50" width="150" height="136" rx="10" fill="var(--surface)" stroke="var(--l3)" stroke-width="2"/>
+  <text x="745" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="var(--l3)">3 · Datos</text>
+  <text x="745" y="100" text-anchor="middle" font-size="12" fill="var(--text)">PHP · Eloquent</text>
+  <text x="745" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">consultas SQL</text>
+  <text x="745" y="138" text-anchor="middle" font-size="11" fill="var(--muted)">solo atiende a Negocio</text>
+  <rect x="845" y="50" width="110" height="136" rx="10" fill="var(--surface)" stroke="var(--l4)" stroke-width="2"/>
+  <text x="900" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="var(--l4)">4 · MySQL</text>
+  <text x="900" y="100" text-anchor="middle" font-size="12" fill="var(--text)">citas_medicas</text>
+  <text x="900" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">tablas y</text>
+  <text x="900" y="138" text-anchor="middle" font-size="11" fill="var(--muted)">procedimientos</text>
+  <line x1="106" y1="118" x2="166" y2="118" stroke="var(--muted)" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="136" y="108" text-anchor="middle" font-size="10" fill="var(--muted)">HTTPS</text>
+  <line x1="362" y1="118" x2="416" y2="118" stroke="var(--muted)" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="612" y1="118" x2="666" y2="118" stroke="var(--muted)" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="822" y1="118" x2="841" y2="118" stroke="var(--muted)" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="490" y="240" text-anchor="middle" font-size="12" fill="var(--muted)">Cada capa solo conversa con su vecina. El usuario nunca habla directamente con Negocio, Datos ni MySQL.</text>
+</svg>
+</div>
+<p>Ejemplo de lo que ocurre cuando alguien inicia sesión:</p>
+<ol>
+  <li>El navegador envía usuario y contraseña a <code>https://su-sitio/api/auth/login</code>, es decir, a la capa de <strong>Presentación</strong>.</li>
+  <li>Nginx, dentro de Presentación, ve que la ruta empieza con <code>/api</code> y la reenvía a <strong>Negocio</strong>.</li>
+  <li>Negocio le pide a <strong>Datos</strong> las credenciales del usuario y le agrega una llave secreta (<code>X-Internal-Key</code>) para demostrar que la petición viene de Negocio.</li>
+  <li>Datos consulta <strong>MySQL</strong> y devuelve el resultado.</li>
+  <li>Negocio verifica la contraseña, genera el token JWT y la respuesta vuelve por el mismo camino.</li>
+</ol>
+
+<!-- =================================================================== -->
+<h2 id="dev-vs-prod">Desarrollo vs. producción: por qué hay que cambiar archivos</h2>
+<p>La configuración actual funciona bien en su computadora (<strong>desarrollo</strong>), pero tiene atajos que no sirven en Internet (<strong>producción</strong>). Estas son las diferencias y cómo las resuelven los archivos nuevos:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>En desarrollo (hoy)</th><th>Por qué no sirve en Internet</th><th>Qué hacen los archivos nuevos</th></tr></thead>
+<tbody>
+<tr><td>Docker «presta» las carpetas <code>Data/src</code> y <code>Business/src</code> desde su disco (volúmenes).</td><td>El servidor no tiene acceso a su disco, así que el contenedor arrancaría sin código.</td><td>Los nuevos <code>Dockerfile</code> copian el código <strong>dentro</strong> de la imagen.</td></tr>
+<tr><td>Las contraseñas están en <code>Business/.env</code> y <code>Data/.env</code>, que están subidos a GitHub.</td><td>Cualquiera con acceso al repositorio o a la imagen vería las contraseñas.</td><td>Un script de arranque (<code>docker-entrypoint.sh</code>) crea el <code>.env</code> con valores que usted configura en el hosting.</td></tr>
+<tr><td>Angular llama a <code>http://localhost:9090/api</code>.</td><td>En el navegador del usuario, <code>localhost</code> es su propia computadora, no el servidor.</td><td>Angular llama a <code>/api</code> en su mismo sitio, y Nginx lo reenvía a Negocio.</td></tr>
+<tr><td>La capa de Presentación no tiene contenedor (está comentada en el compose).</td><td>No habría quien sirva las pantallas.</td><td>Se agregan <code>Presentation/Dockerfile</code> y una configuración de Nginx.</td></tr>
+<tr><td>La capa de Datos y MySQL publican sus puertos (8080 y 3307).</td><td>Cualquiera en Internet podría leer o borrar datos sin pasar por Negocio.</td><td>Solo Presentación queda pública, y Datos exige la llave <code>INTERNAL_KEY</code>.</td></tr>
+<tr><td>Apache escucha siempre en el puerto 80.</td><td>Algunos hostings asignan otro puerto mediante la variable <code>PORT</code>.</td><td>El script de arranque ajusta el puerto automáticamente.</td></tr>
+<tr><td>La conexión a MySQL no indica puerto ni cifrado.</td><td>Las bases de datos en la nube usan otros puertos y exigen conexión cifrada (TLS).</td><td><code>config.php</code>, <code>conexion.php</code> y <code>eloquent.php</code> aceptan puerto y TLS.</td></tr>
+<tr><td>El Dockerfile verifica el instalador de Composer con un código fijo.</td><td>Composer cambia ese instalador cada cierto tiempo y el build fallaría.</td><td>Se toma Composer de su imagen oficial.</td></tr>
+</tbody></table></div>
+<div class="note ok"><strong>Su entorno de desarrollo sigue funcionando</strong>Los archivos nuevos usan por defecto los mismos valores de hoy, así que <code>docker compose up</code> y <code>ng serve</code> siguen igual. Una sola diferencia: si no define la variable <code>KEY</code>, Negocio inventa una llave temporal y tendrá que iniciar sesión de nuevo cada vez que reinicie los contenedores.</div>
+
+<!-- =================================================================== -->
+<h2 id="herramientas">Paso 1 · Instalar y comprobar las herramientas</h2>
+<span class="time">⏱ 20 a 40 minutos (una sola vez)</span>
+<p>Necesita estas herramientas en su computadora. Si ya las tiene, solo ejecute la comprobación.</p>
+<ol class="steps">
+<li><strong>Git</strong>: guarda versiones del proyecto y lo sube a GitHub. Descárguelo de <a href="https://git-scm.com/download/win">git-scm.com</a> e instálelo con las opciones por defecto.</li>
+<li><strong>Docker Desktop</strong>: construye y ejecuta los contenedores. Descárguelo de <a href="https://www.docker.com/products/docker-desktop/">docker.com</a>.
+<ul>
+  <li>En la instalación, deje marcada la opción <em>Use WSL 2 instead of Hyper-V</em>.</li>
+  <li>Si al abrirlo pide instalar o actualizar WSL, abra PowerShell <strong>como administrador</strong> y ejecute <code>wsl --install</code>. Reinicie la computadora.</li>
+  <li>Docker Desktop debe estar <strong>abierto</strong> (ícono de la ballena en la barra de tareas, en verde) cada vez que use comandos <code>docker</code>.</li>
+</ul></li>
+<li><strong>VS Code</strong>: para editar archivos y usar la terminal integrada.</li>
+<li><strong>Una cuenta de GitHub</strong> en <a href="https://github.com">github.com</a>. Con el correo de la universidad puede solicitar el <a href="https://education.github.com/pack">GitHub Student Developer Pack</a>, que incluye créditos en algunos hostings.</li>
+<li><strong>Compruebe que todo esté instalado.</strong> Abra la carpeta del proyecto en VS Code, abra una terminal (<em>Terminal → New Terminal</em>) y ejecute:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git --version
+docker --version
+docker compose version
+docker run --rm hello-world</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver (los números de versión pueden variar)</span><code>git version 2.47.1.windows.1
+Docker version 28.x.x, build ...
+Docker Compose version v2.x.x
+...
+Hello from Docker!
+This message shows that your installation appears to be working correctly.</code></pre>
+<span class="hint">Si <code>docker</code> responde «failed to connect to the docker API» o «cannot find the file specified», es que Docker Desktop está cerrado o sigue arrancando. Ábralo, espere a que la ballena quede quieta y repita.</span></li>
+</ol>
+
+<!-- =================================================================== -->
+<h2 id="paso0">Paso 2 · Aplicar los archivos nuevos al proyecto</h2>
+<span class="time">⏱ 10 minutos</span>
+<div class="note why"><strong>¿Qué está haciendo?</strong>La carpeta <code>despliegue/sobrescribir/</code> contiene los archivos preparados para producción, organizados con las mismas carpetas que su proyecto. Copiarla sobre la raíz reemplaza algunos archivos y agrega otros. Antes se crea una <strong>rama</strong> de Git: si algo sale mal, puede volver a <code>main</code> y el proyecto queda como estaba.</div>
+<ol class="steps">
+<li><strong>Revise que no tenga cambios sin guardar.</strong> En la terminal de VS Code, desde la raíz del proyecto (la carpeta que contiene <code>docker-compose.yml</code>):
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git status</code></pre>
+Si aparecen archivos modificados que quiere conservar, haga commit antes de seguir:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git add -A
+git commit -m "Avance antes de preparar el despliegue"</code></pre></li>
+<li><strong>Cree la rama de despliegue</strong> y cámbiese a ella:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git checkout -b despliegue</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver</span><code>Switched to a new branch 'despliegue'</code></pre></li>
+<li><strong>Copie los archivos</strong> con <code>robocopy</code>, que viene con Windows. <code>/E</code> significa «incluye las subcarpetas»:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>robocopy .\despliegue\sobrescribir . /E</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver (resumen al final)</span><code>               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        12         0        12         0         0         0
+   Files :        17        17         0         0         0         0</code></pre>
+<span class="hint">La columna que importa es <strong>FAILED</strong>: debe ser 0. robocopy termina con «código de salida 1» cuando copió archivos; eso indica éxito, no error.</span></li>
+<li><strong>Vea qué cambió.</strong> <code>git status</code> lista los archivos modificados (<code>modified</code>) y los nuevos (<code>Untracked files</code>):
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git status</code></pre>
+Debería ver modificados, entre otros, <code>Business/Dockerfile</code>, <code>Data/Dockerfile</code> y <code>Presentation/src/environments/environment.ts</code>; y nuevos, como <code>docker-compose.prod.yml</code>, <code>render.yaml</code> y <code>Presentation/Dockerfile</code>. En VS Code puede hacer clic en cada archivo de la pestaña <em>Source Control</em> para ver las diferencias lado a lado.</li>
+<li><strong>Proteja los secretos.</strong> Abra el archivo <code>.gitignore</code> de la raíz en VS Code y agregue al final estas dos líneas. Así Git nunca subirá su archivo de contraseñas ni el certificado de la BD:
+<pre class="has-lbl"><span class="lbl pc">.gitignore (agregar al final)</span><code>.env.prod
+ca.pem</code></pre>
+Guarde con <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+</ol>
+<details class="more"><summary>¿Qué hace cada archivo nuevo? (tabla de referencia)</summary><div>
+<div class="table-wrap"><table>
+<thead><tr><th>Archivo</th><th>Acción</th><th>En palabras simples</th></tr></thead>
+<tbody>
+<tr><td><code>Business/Dockerfile</code></td><td>Reemplaza</td><td>Receta de la imagen de Negocio, con el código adentro</td></tr>
+<tr><td><code>Business/docker-entrypoint.sh</code></td><td>Nuevo</td><td>Script que corre al arrancar: ajusta el puerto y crea el <code>.env</code></td></tr>
+<tr><td><code>Business/src/Services/DataService.php</code></td><td>Reemplaza</td><td>Agrega la llave <code>X-Internal-Key</code> a cada llamada hacia Datos</td></tr>
+<tr><td><code>Data/Dockerfile</code></td><td>Reemplaza</td><td>Receta de la imagen de Datos, con el código adentro</td></tr>
+<tr><td><code>Data/docker-entrypoint.sh</code></td><td>Nuevo</td><td>Crea el <code>.env</code>, lee la contraseña de la BD y rechaza peticiones sin la llave</td></tr>
+<tr><td><code>Data/src/app/config.php</code>, <code>conexion.php</code>, <code>eloquent.php</code></td><td>Reemplazan</td><td>Permiten conectarse a MySQL en otro puerto y con cifrado</td></tr>
+<tr><td><code>Presentation/Dockerfile</code></td><td>Nuevo</td><td>Compila Angular y lo sirve con Nginx</td></tr>
+<tr><td><code>Presentation/nginx/default.conf.template</code></td><td>Nuevo</td><td>Configuración de Nginx: muestra la app y reenvía <code>/api</code> a Negocio</td></tr>
+<tr><td><code>Presentation/src/environments/environment.ts</code></td><td>Reemplaza</td><td>La app llama a <code>/api</code> en lugar de <code>localhost:9090</code></td></tr>
+<tr><td><code>.dockerignore</code> y <code>Presentation/.dockerignore</code></td><td>Nuevos</td><td>Lista de lo que <strong>no</strong> debe entrar en las imágenes (contraseñas, <code>node_modules</code>…)</td></tr>
+<tr><td><code>docker-compose.prod.yml</code></td><td>Nuevo</td><td>Compose de producción: los 4 contenedores más HTTPS (opción A)</td></tr>
+<tr><td><code>Caddyfile</code></td><td>Nuevo</td><td>Configuración de Caddy, que obtiene el certificado HTTPS</td></tr>
+<tr><td><code>.env.prod.example</code></td><td>Nuevo</td><td>Plantilla de las contraseñas de producción</td></tr>
+<tr><td><code>render.yaml</code></td><td>Nuevo</td><td>Instrucciones para que Render cree los servicios solo (opción B)</td></tr>
+</tbody></table></div>
+</div></details>
+
+<!-- =================================================================== -->
+<h2 id="github">Paso 3 · Subir el proyecto a GitHub</h2>
+<span class="time">⏱ 10 minutos</span>
+<div class="note why"><strong>¿Por qué GitHub?</strong>Los hostings descargan el código desde GitHub para construir las imágenes. En la opción A, la VM también lo descarga de ahí.</div>
+<ol class="steps">
+<li><strong>Revise si el proyecto ya tiene un repositorio remoto:</strong>
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git remote -v</code></pre>
+Si aparecen líneas con <code>origin  https://github.com/...</code>, ya lo tiene: salte al punto 3.</li>
+<li><strong>Si no aparece nada, cree el repositorio:</strong> en GitHub, botón <em>New repository</em>, póngale un nombre (p. ej. <code>citas-medicas</code>), márquelo como <strong>Private</strong> y <strong>no</strong> marque «Add a README». Luego conéctelo:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git remote add origin https://github.com/TU_USUARIO/citas-medicas.git</code></pre></li>
+<li><strong>Guarde y suba la rama</strong>:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git add -A
+git commit -m "Configuración de despliegue en contenedores"
+git push -u origin despliegue</code></pre>
+La primera vez se abrirá una ventana para iniciar sesión en GitHub. Al terminar, refresque la página del repositorio: en el selector de ramas debe aparecer <code>despliegue</code>.</li>
+</ol>
+<div class="note danger"><strong>Las contraseñas de desarrollo ya están en GitHub</strong><code>Business/.env</code>, <code>Data/.env</code> y <code>db_password.txt</code> estaban subidos desde antes. No pasa nada mientras sean solo de desarrollo, pero en producción <strong>nunca</strong> reutilice esos valores (<code>12345</code>, la <code>KEY</code> actual). Esta guía genera valores nuevos.</div>
+
+<!-- =================================================================== -->
+<h2 id="prueba-local">Paso 4 · Probar la versión de producción en su computadora</h2>
+<span class="time">⏱ 15 a 25 minutos (el primer build es lento)</span>
+<div class="note why"><strong>¿Por qué probar en local?</strong>Si algo falla, es mucho más fácil corregirlo en su computadora que en un servidor remoto. Lo que funcione aquí con <code>docker-compose.prod.yml</code> funcionará igual en la VM de la opción A.</div>
+<ol class="steps">
+<li><strong>Detenga los contenedores de desarrollo.</strong> Ambos compose usan los mismos nombres de contenedor (<code>base_datos</code>, <code>web_datos</code>…), así que no pueden correr a la vez:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker compose down</code></pre></li>
+<li><strong>Cree su archivo de contraseñas de producción</strong> a partir de la plantilla:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>Copy-Item .env.prod.example .env.prod</code></pre></li>
+<li><strong>Genere dos llaves aleatorias.</strong> Copie este bloque completo en PowerShell. Define una función <code>Nueva-Llave</code> que crea 64 caracteres aleatorios y la ejecuta dos veces:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>function Nueva-Llave {
+  $b = New-Object byte[] 32
+  [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+  ($b | ForEach-Object { $_.ToString('x2') }) -join ''
+}
+"JWT_KEY      = $(Nueva-Llave)"
+"INTERNAL_KEY = $(Nueva-Llave)"</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver (sus valores serán otros)</span><code>JWT_KEY      = 9f2c4a7d1e0b... (64 caracteres)
+INTERNAL_KEY = 41be08c93a57... (64 caracteres)</code></pre></li>
+<li><strong>Edite <code>.env.prod</code></strong> en VS Code: reemplace los valores de ejemplo de <code>JWT_KEY</code> e <code>INTERNAL_KEY</code> por los que generó, sin espacios ni comillas. Deje <code>DOMAIN=</code> vacío para la prueba local. Debe quedar así:
+<pre class="has-lbl"><span class="lbl pc">.env.prod</span><code>JWT_KEY=9f2c4a7d1e0b...
+INTERNAL_KEY=41be08c93a57...
+JWT_TTL=3600
+DOMAIN=
+CORS_ALLOWED_ORIGINS=http://localhost,https://localhost,capacitor://localhost</code></pre></li>
+<li><strong>Construya y levante los contenedores.</strong> <code>--env-file</code> indica el archivo de contraseñas, <code>-f</code> el compose de producción, <code>up</code> arranca, <code>-d</code> deja todo en segundo plano y <code>--build</code> construye las imágenes:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build</code></pre>
+La primera vez tarda entre 5 y 15 minutos: descarga PHP, Node, MySQL y Nginx, instala las dependencias y compila Angular. Verá muchas líneas avanzar; es normal. Al final debe aparecer algo como:
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver</span><code> ✔ Container base_datos        Healthy
+ ✔ Container web_datos         Started
+ ✔ Container web_negocio       Started
+ ✔ Container web_presentacion  Started
+ ✔ Container proxy_https       Started</code></pre></li>
+<li><strong>Revise el estado de los contenedores:</strong>
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker compose -f docker-compose.prod.yml ps</code></pre>
+En la columna <code>STATUS</code> todos deben decir <code>Up</code>. Si alguno dice <code>Restarting</code> o <code>Exited</code>, vea sus logs (sección <a href="#logs">Leer los logs</a>).</li>
+<li><strong>Abra <a href="http://localhost">http://localhost</a></strong> en el navegador. Debe aparecer la pantalla de login. Todavía no hay usuarios: créelos con la sección <a href="#admin">Crear el usuario administrador</a>, usando las instrucciones para la opción A.</li>
+<li><strong>Cuando termine de probar, apague todo:</strong>
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker compose -f docker-compose.prod.yml down</code></pre>
+<span class="hint"><code>down</code> detiene y elimina los contenedores, pero los datos de MySQL se conservan en un volumen. <code>down -v</code> borraría también los datos.</span></li>
+</ol>
+<div class="note warn"><strong>«Port 80 is already allocated» o «address already in use»</strong>Otro programa usa el puerto 80 (IIS, Skype, XAMPP o los contenedores de desarrollo). Ciérrelo, o ejecute <code>docker ps</code> para ver qué contenedor lo ocupa y deténgalo con <code>docker stop NOMBRE</code>.</div>
+
+<!-- =================================================================== -->
+<h2 id="elegir">Paso 5 · Elegir dónde publicar</h2>
+<p>Hay dos formas de publicar contenedores gratis, y esta guía cubre ambas:</p>
+<ul>
+  <li><strong>Una máquina virtual (opción A).</strong> Usted alquila (gratis) una computadora en la nube y hace exactamente lo mismo que en el paso 4. Es lo más parecido a su entorno actual. Requiere usar SSH y algunos comandos de Linux.</li>
+  <li><strong>Un PaaS (opciones B, C y D).</strong> Usted entrega el código o las imágenes y el proveedor los ejecuta. No administra ningún servidor, pero MySQL debe ir aparte (en Aiven), porque los PaaS borran el disco de los contenedores al reiniciarlos.</li>
+</ul>
+<div class="options">
+  <a class="opt" href="#oracle"><span class="tag">Recomendada</span><h4>A · Oracle Cloud Always Free</h4><p>VM gratis para siempre con los 4 contenedores. Siempre encendida. Pide tarjeta solo para verificar la identidad.</p></a>
+  <a class="opt" href="#render"><span class="tag">La más fácil</span><h4>B · Render + Aiven</h4><p>Todo desde la página web, sin tarjeta. Los servicios se duermen tras 15 minutos sin uso.</p></a>
+  <a class="opt" href="#cloudrun"><span class="tag">La más rápida</span><h4>C · Google Cloud Run + Aiven</h4><p>Arranca en segundos. Requiere tarjeta y usar la consola de comandos de Google.</p></a>
+  <a class="opt" href="#azure"><span class="tag">Con correo UCR</span><h4>D · Azure for Students</h4><p>Crédito estudiantil sin tarjeta. Datos y Negocio quedan completamente privados.</p></a>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>A · Oracle</th><th>B · Render</th><th>C · Cloud Run</th><th>D · Azure</th></tr></thead>
+<tbody>
+<tr><td>¿Pide tarjeta?</td><td class="mid">Sí (solo verificación)</td><td class="yes">No</td><td class="mid">Sí</td><td class="yes">No</td></tr>
+<tr><td>¿Siempre encendida?</td><td class="yes">Sí</td><td class="no">No: tarda ~1 min en despertar</td><td class="mid">Arranca en segundos</td><td class="mid">Arranca en segundos</td></tr>
+<tr><td>¿Dónde va MySQL?</td><td>En un contenedor propio</td><td>Aiven</td><td>Aiven</td><td>Aiven</td></tr>
+<tr><td>Dificultad</td><td>Media</td><td>Baja</td><td>Media</td><td>Media</td></tr>
+<tr><td>Tiempo estimado</td><td>60 a 90 min</td><td>40 a 60 min</td><td>60 a 90 min</td><td>60 a 90 min</td></tr>
+</tbody></table></div>
+<div class="note"><strong>¿No sabe cuál elegir?</strong>Para presentar el proyecto ante el profesor sin esperas, elija <strong>A</strong>. Si no tiene tarjeta, elija <strong>B</strong> y abra la aplicación unos minutos antes de presentarla para «despertarla».</div>
+
+<!-- =================================================================== -->
+<h2 id="oracle">Opción A · Oracle Cloud Always Free (máquina virtual)</h2>
+<span class="time">⏱ 60 a 90 minutos</span>
+<p>Oracle regala, sin fecha de vencimiento, máquinas virtuales ARM de hasta 4 procesadores y 24 GB de RAM. Usted instalará Docker en una de ellas y levantará los mismos contenedores del paso 4.</p>
+<div class="note warn"><strong>Antes de empezar</strong><ul>
+<li>Oracle pide una tarjeta de crédito o débito para verificar su identidad. Puede hacer un cargo temporal que luego se reversa. Mientras use solo recursos marcados como <em>Always Free</em>, no cobra.</li>
+<li>Si su región se queda sin capacidad, al crear la VM verá el error <em>«Out of capacity»</em>. Intente más tarde o con menos recursos (1 procesador y 6 GB).</li>
+<li>Oracle puede recuperar VMs gratuitas que pasan 7 días casi sin uso. Si la VM desaparece, se vuelve a crear con estos mismos pasos.</li>
+</ul></div>
+
+<h3>A.1 · Crear la cuenta y la máquina virtual</h3>
+<ol class="steps">
+<li><strong>Cree la cuenta</strong> en <a href="https://www.oracle.com/cloud/free/">oracle.com/cloud/free</a> con el botón <em>Start for free</em>. En <em>Home Region</em> elija una región cercana, por ejemplo <em>US East (Ashburn)</em> o <em>Mexico Central (Querétaro)</em>. <strong>La región no se puede cambiar después.</strong> La activación puede tardar unos minutos y llega por correo.</li>
+<li><strong>Cree la instancia.</strong> En el menú ☰ vaya a <em>Compute → Instances</em> y presione <em>Create instance</em>. Complete así:
+<ul>
+<li><strong>Name</strong>: <code>citas-medicas</code></li>
+<li><strong>Image and shape → Edit</strong>:
+  <ul>
+  <li><em>Change image</em> → <strong>Canonical Ubuntu</strong> → versión <strong>24.04</strong>.</li>
+  <li><em>Change shape</em> → <strong>Ampere</strong> → <strong>VM.Standard.A1.Flex</strong>, con 2 OCPUs y 12 GB de memoria. Debe ver la etiqueta <em>Always Free-eligible</em>.</li>
+  </ul></li>
+<li><strong>Networking</strong>: deje que cree una red nueva (<em>Create new virtual cloud network</em>) con subred pública, y verifique que esté marcado <em>Assign a public IPv4 address</em>.</li>
+<li><strong>Add SSH keys</strong>: elija <em>Generate a key pair for me</em> y presione <strong>Save private key</strong>. Se descarga un archivo como <code>ssh-key-2026-11-20.key</code>. Guárdelo en una carpeta segura, por ejemplo <code>C:\Users\SU_USUARIO\.ssh\</code>.</li>
+</ul>
+Presione <em>Create</em>. En 1 o 2 minutos el estado cambia de <em>Provisioning</em> a <strong>Running</strong>.</li>
+<li><strong>Anote la IP pública.</strong> En la página de la instancia, en <em>Instance access</em>, copie la <strong>Public IP address</strong>, por ejemplo <code>152.70.12.34</code>. La usará varias veces.</li>
+</ol>
+<div class="note danger"><strong>La llave SSH es como la llave de su casa</strong>Sin el archivo <code>.key</code> no puede entrar a la VM, y Oracle no lo guarda. No lo pierda ni lo suba a GitHub.</div>
+
+<h3>A.2 · Abrir los puertos 80 y 443</h3>
+<div class="note why"><strong>¿Qué está haciendo?</strong>Por seguridad, Oracle bloquea todo el tráfico que llega a la VM excepto SSH (puerto 22). Para que se pueda visitar la aplicación hay que permitir el puerto 80 (HTTP) y el 443 (HTTPS). Existen dos «puertas» que abrir: el firewall de Oracle (<em>Security List</em>) y el firewall de Ubuntu (<em>iptables</em>, en A.3).</div>
+<ol class="steps">
+<li>En la página de la instancia, haga clic en el nombre de la <strong>Subnet</strong> (sección <em>Primary VNIC</em>).</li>
+<li>En <em>Security Lists</em>, abra <strong>Default Security List for …</strong></li>
+<li>Presione <strong>Add Ingress Rules</strong> y complete: <em>Source CIDR</em> <code>0.0.0.0/0</code> (significa «desde cualquier lugar»), <em>IP Protocol</em> <code>TCP</code>, <em>Destination Port Range</em> <code>80</code>. Presione <em>+ Another Ingress Rule</em> y repita con el puerto <code>443</code>. Guarde con <em>Add Ingress Rules</em>.</li>
+</ol>
+
+<h3>A.3 · Conectarse a la VM por SSH</h3>
+<ol class="steps">
+<li><strong>Proteja el archivo de la llave.</strong> Windows le da permisos demasiado abiertos y SSH se niega a usarlo con el error <em>«UNPROTECTED PRIVATE KEY FILE»</em>. Estos comandos dejan que solo su usuario pueda leerlo:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>cd $HOME\.ssh
+icacls .\ssh-key-2026-11-20.key /inheritance:r
+icacls .\ssh-key-2026-11-20.key /grant:r "$($env:USERNAME):(R)"</code></pre>
+<span class="hint">Cambie el nombre del archivo por el de su llave.</span></li>
+<li><strong>Conéctese.</strong> El usuario de las VMs Ubuntu en Oracle es <code>ubuntu</code>:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>ssh -i $HOME\.ssh\ssh-key-2026-11-20.key ubuntu@IP_PUBLICA</code></pre>
+La primera vez preguntará <em>«Are you sure you want to continue connecting (yes/no)?»</em>. Escriba <code>yes</code> y <kbd>Enter</kbd>.
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver</span><code>Welcome to Ubuntu 24.04 LTS (GNU/Linux ... aarch64)
+...
+ubuntu@citas-medicas:~$</code></pre>
+<span class="hint">El texto <code>ubuntu@citas-medicas:~$</code> indica que ahora está escribiendo <strong>dentro de la VM</strong>. Desde aquí, los comandos llevan la etiqueta «Servidor (VM)». Para salir escriba <code>exit</code>.</span></li>
+<li><strong>Actualice el sistema y abra los puertos en el firewall de Ubuntu</strong>. <code>sudo</code> ejecuta el comando como administrador:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>sudo apt update && sudo apt upgrade -y
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+sudo netfilter-persistent save</code></pre>
+<span class="hint">Si durante <code>apt upgrade</code> aparece una pantalla morada preguntando qué servicios reiniciar, presione <kbd>Enter</kbd> para aceptar.</span></li>
+</ol>
+
+<h3>A.4 · Instalar Docker en la VM</h3>
+<ol class="steps">
+<li><strong>Instale Docker</strong> con el script oficial:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>curl -fsSL https://get.docker.com | sudo sh</code></pre></li>
+<li><strong>Permita que su usuario use Docker sin <code>sudo</code></strong>. <code>newgrp</code> aplica el cambio sin tener que salir y volver a entrar:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>sudo usermod -aG docker $USER
+newgrp docker
+docker run --rm hello-world</code></pre>
+Debe ver <em>«Hello from Docker!»</em>, igual que en su PC.</li>
+</ol>
+
+<h3>A.5 · Descargar el proyecto en la VM</h3>
+<ol class="steps">
+<li><strong>Cree un token de GitHub</strong> (solo si su repositorio es privado). GitHub ya no acepta su contraseña normal desde la terminal. En GitHub: foto de perfil → <em>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</em>.
+<ul>
+<li><em>Repository access</em>: <em>Only select repositories</em> → su repositorio.</li>
+<li><em>Permissions → Contents</em>: <strong>Read-only</strong>.</li>
+</ul>
+Copie el token (empieza con <code>github_pat_</code>); GitHub solo lo muestra una vez.</li>
+<li><strong>Clone el repositorio</strong> en la rama de despliegue. Cuando pida <em>Username</em>, escriba su usuario de GitHub; en <em>Password</em>, pegue el token (no se ve mientras lo pega; es normal):
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>git clone -b despliegue https://github.com/TU_USUARIO/TU_REPO.git citas
+cd citas
+ls</code></pre>
+<code>ls</code> debe listar <code>Business</code>, <code>Data</code>, <code>Presentation</code>, <code>docker-compose.prod.yml</code>, etc.</li>
+</ol>
+
+<h3>A.6 · Configurar las contraseñas de producción</h3>
+<div class="note why"><strong>¿Qué está haciendo?</strong>Crea, <strong>dentro de la VM</strong>, una contraseña nueva para MySQL y el archivo <code>.env.prod</code> con llaves nuevas. Como son archivos ignorados por Git, nunca salen del servidor. <code>openssl rand -hex 32</code> es el equivalente en Linux de la función <code>Nueva-Llave</code> del paso 4.</div>
+<ol class="steps">
+<li><strong>Contraseña de MySQL.</strong> Reemplaza el <code>12345</code> de desarrollo; <code>chmod 600</code> hace que solo su usuario pueda leer el archivo:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>printf '%s' "$(openssl rand -hex 16)" > db_password.txt
+chmod 600 db_password.txt</code></pre></li>
+<li><strong>Archivo <code>.env.prod</code> con llaves nuevas</strong>. <code>sed</code> reemplaza el texto de ejemplo directamente en el archivo:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>cp .env.prod.example .env.prod
+sed -i "s/^JWT_KEY=.*/JWT_KEY=$(openssl rand -hex 32)/" .env.prod
+sed -i "s/^INTERNAL_KEY=.*/INTERNAL_KEY=$(openssl rand -hex 32)/" .env.prod</code></pre></li>
+<li><strong>Dominio gratuito con sslip.io.</strong> Let's Encrypt solo emite certificados HTTPS para nombres de dominio, no para IPs. El servicio gratuito <a href="https://sslip.io">sslip.io</a> convierte su IP en un nombre: <code>152.70.12.34</code> pasa a ser <code>152-70-12-34.sslip.io</code>. Este comando lo calcula y lo guarda:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>IP=$(curl -s ifconfig.me)
+sed -i "s/^DOMAIN=.*/DOMAIN=${IP//./-}.sslip.io/" .env.prod
+cat .env.prod</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver</span><code>JWT_KEY=3b9e0c...
+INTERNAL_KEY=a71f42...
+...
+DOMAIN=152-70-12-34.sslip.io
+...</code></pre></li>
+</ol>
+<details class="more"><summary>¿Necesita editar un archivo a mano en la VM? Cómo usar <code>nano</code></summary><div>
+<p><code>nano</code> es un editor de texto que funciona dentro de la terminal. Abra un archivo con <code>nano .env.prod</code> y muévase con las flechas del teclado (el mouse no funciona).</p>
+<ul>
+<li><kbd>Ctrl</kbd>+<kbd>O</kbd> y luego <kbd>Enter</kbd>: guardar.</li>
+<li><kbd>Ctrl</kbd>+<kbd>X</kbd>: salir.</li>
+<li><kbd>Ctrl</kbd>+<kbd>K</kbd>: cortar la línea completa.</li>
+<li>Clic derecho: pegar lo que copió en Windows.</li>
+</ul>
+</div></details>
+
+<h3>A.7 · Levantar la aplicación</h3>
+<ol class="steps">
+<li><strong>Construya y arranque</strong> con el mismo comando del paso 4. En la VM ARM el primer build tarda entre 5 y 10 minutos:
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build</code></pre></li>
+<li><strong>Revise el estado</strong> (todos deben decir <code>Up</code>):
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>docker compose -f docker-compose.prod.yml ps</code></pre></li>
+<li><strong>Observe a Caddy obtener el certificado HTTPS.</strong> <code>logs -f</code> muestra los mensajes en vivo; salga con <kbd>Ctrl</kbd>+<kbd>C</kbd> (no detiene nada):
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>docker compose -f docker-compose.prod.yml logs -f proxy</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver después de unos segundos</span><code>... "certificate obtained successfully" ... "identifier":"152-70-12-34.sslip.io"</code></pre></li>
+<li><strong>Abra <code>https://SU-IP-CON-GUIONES.sslip.io</code></strong> en el navegador. Debe ver el candado y la pantalla de login. ¡Su aplicación está en Internet!</li>
+</ol>
+
+<h3>A.8 · Mantenimiento</h3>
+<h4>Publicar cambios nuevos</h4>
+<p>Cada vez que haga cambios: en su PC, <code>git push</code>; luego, en la VM:</p>
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>cd ~/citas
+git pull
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build</code></pre>
+<p>Docker solo reconstruye las capas que cambiaron. Los datos de MySQL se conservan.</p>
+<h4>Respaldar la base de datos</h4>
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>docker exec base_datos sh -c 'exec mysqldump -uroot -p"$(cat /run/secrets/db_password)" citas_medicas' > respaldo_$(date +%F).sql</code></pre>
+<p>Para bajar el respaldo a su PC (desde PowerShell, no desde la VM):</p>
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>scp -i $HOME\.ssh\ssh-key-2026-11-20.key ubuntu@IP_PUBLICA:~/citas/respaldo_*.sql .</code></pre>
+<h4>Detener y volver a encender</h4>
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>docker compose -f docker-compose.prod.yml stop     # detiene sin borrar nada
+docker compose -f docker-compose.prod.yml start    # vuelve a encender</code></pre>
+<p>Si la VM se reinicia, los contenedores arrancan solos gracias a <code>restart: unless-stopped</code>.</p>
+<div class="note"><strong>Sobre <code>db_dump/scripts.sql</code></strong>MySQL ejecuta el script solo la primera vez que arranca con el volumen vacío. Si cambia el script y quiere empezar de cero, use <code>docker compose -f docker-compose.prod.yml down -v</code> y vuelva a levantar. <strong>Esto borra todos los datos</strong>: haga un respaldo antes.</div>
+
+<!-- =================================================================== -->
+<h2 id="aiven">Base de datos gratis en Aiven (necesaria para B, C y D)</h2>
+<span class="time">⏱ 20 minutos</span>
+<div class="note why"><strong>¿Por qué MySQL va aparte?</strong>En Render, Cloud Run y Azure los contenedores son «desechables»: al reiniciarse vuelven al estado de la imagen y todo lo escrito en disco se pierde. Si MySQL corriera ahí, perdería las citas cada vez. Aiven ofrece un MySQL gratuito, sin tarjeta, que guarda los datos de forma permanente.</div>
+<ol class="steps">
+<li><strong>Cree la cuenta</strong> en <a href="https://console.aiven.io/signup">console.aiven.io/signup</a> (puede usar su cuenta de Google o GitHub).</li>
+<li><strong>Cree el servicio MySQL.</strong> Presione <em>Create service</em> y elija <strong>MySQL</strong>. En <em>Service tier</em> o <em>Plan</em> elija <strong>Free</strong>, y una región cercana a donde desplegará (por ejemplo una de <em>North America</em>). Póngale un nombre como <code>citas-db</code> y presione <em>Create free service</em>. Espere de 3 a 5 minutos hasta que el estado diga <strong>Running</strong> (en verde).</li>
+<li><strong>Anote los datos de conexión.</strong> En <em>Overview → Connection information</em> encontrará:
+<div class="table-wrap"><table>
+<thead><tr><th>Dato en Aiven</th><th>Ejemplo</th><th>Variable donde va</th></tr></thead>
+<tbody>
+<tr><td>Host</td><td><code>citas-db-tuusuario.c.aivencloud.com</code></td><td><code>DB_HOST</code></td></tr>
+<tr><td>Port</td><td><code>12345</code> (no es 3306)</td><td><code>DB_PORT</code></td></tr>
+<tr><td>User</td><td><code>avnadmin</code></td><td><code>DB_USER</code></td></tr>
+<tr><td>Password</td><td>(clic en el ojo para verla)</td><td><code>DB_PASSW</code></td></tr>
+<tr><td>CA certificate</td><td>botón <em>Download</em></td><td>archivo <code>ca.pem</code></td></tr>
+</tbody></table></div>
+Guarde el archivo descargado como <code>ca.pem</code> en la raíz del proyecto (ya está en <code>.gitignore</code>). Es el certificado que permite comprobar que se está hablando con el servidor real de Aiven.</li>
+<li><strong>Cree la base de datos</strong> <code>citas_medicas</code>: pestaña <em>Databases</em> → <em>Create database</em> → nombre <code>citas_medicas</code>.</li>
+<li><strong>Cargue las tablas y procedimientos.</strong> En lugar de instalar el cliente de MySQL, se usa un contenedor temporal que trae el comando <code>mysql</code>, lee <code>db_dump/scripts.sql</code> y lo ejecuta en Aiven. <code>--rm</code> lo elimina al terminar. Desde la raíz del proyecto, en PowerShell:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker run --rm -v "${PWD}\db_dump:/dump" -v "${PWD}\ca.pem:/ca.pem" mysql:8.4 `
+  sh -c 'mysql -h HOST_AIVEN -P PUERTO_AIVEN -u avnadmin -p"PASSWORD_AIVEN" --ssl-mode=VERIFY_CA --ssl-ca=/ca.pem citas_medicas &lt; /dump/scripts.sql'</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver</span><code>mysql: [Warning] Using a password on the command line interface can be insecure.</code></pre>
+<span class="hint">Esa advertencia es normal. Si no aparece ningún <code>ERROR</code>, la carga funcionó. Para comprobarlo, en Aiven abra <em>Databases → citas_medicas</em>: deben aparecer las tablas.</span></li>
+</ol>
+<div class="note warn"><strong>Límites del plan gratuito de Aiven</strong>1 GB de espacio, más que suficiente para el proyecto. Si el servicio pasa mucho tiempo sin uso, Aiven puede apagarlo y avisarle por correo; se vuelve a encender desde la consola con <em>Power on</em>.</div>
+
+<!-- =================================================================== -->
+<h2 id="render">Opción B · Render + Aiven</h2>
+<span class="time">⏱ 40 a 60 minutos (incluye Aiven)</span>
+<p>Render construye las imágenes directamente desde su repositorio de GitHub. El archivo <code>render.yaml</code> (un «Blueprint») describe los tres servicios para que Render los cree de una sola vez.</p>
+<div class="note warn"><strong>Cómo se comporta el plan gratuito</strong><ul>
+<li><strong>Se duerme:</strong> tras 15 minutos sin visitas, cada servicio se apaga. La siguiente visita lo despierta, pero puede tardar cerca de un minuto, más aún si deben despertar las tres capas en cadena. Antes de una presentación, abra la aplicación 2 o 3 minutos antes.</li>
+<li><strong>Datos tiene URL pública:</strong> en el plan gratuito los servicios no pueden comunicarse por una red privada. Por eso Datos exige la llave <code>INTERNAL_KEY</code>: sin ella responde «403 Prohibido».</li>
+<li><strong>750 horas al mes</strong> compartidas entre todos los servicios. Como duermen cuando no se usan, alcanzan para un proyecto académico.</li>
+</ul></div>
+<ol class="steps">
+<li><strong>Prepare la base de datos en Aiven</strong> (sección anterior) y tenga a mano Host, Port y Password.</li>
+<li><strong>Indique la rama correcta.</strong> En VS Code abra <code>render.yaml</code>. Aparece <code>branch: main</code> tres veces (una por servicio); cámbielo a <code>branch: despliegue</code> en las tres. Guarde y suba el cambio:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>git add render.yaml
+git commit -m "Render: usar rama despliegue"
+git push</code></pre></li>
+<li><strong>Cree la cuenta</strong> en <a href="https://dashboard.render.com/register">render.com</a> con su cuenta de GitHub. Así Render podrá leer sus repositorios.</li>
+<li><strong>Cree el Blueprint.</strong> En el panel, presione <em>New +</em> → <strong>Blueprint</strong>. Elija su repositorio (si no aparece, use <em>Configure account</em> para dar acceso a Render) y escriba un nombre para el blueprint, como <code>citas-medicas</code>. Render leerá <code>render.yaml</code> y mostrará los 3 servicios que va a crear.</li>
+<li><strong>Complete las variables que faltan.</strong> En la misma pantalla, Render pide los valores marcados como <code>sync: false</code>:
+<ul>
+<li><code>DB_HOST</code> → el Host de Aiven</li>
+<li><code>DB_PORT</code> → el Port de Aiven</li>
+<li><code>DB_PASSW</code> → el Password de Aiven</li>
+</ul>
+Las llaves <code>KEY</code> e <code>INTERNAL_KEY</code> no se piden: Render las genera solo. Presione <strong>Apply</strong>. Empezarán los builds de los tres servicios, que tardan entre 5 y 15 minutos.</li>
+<li><strong>Suba el certificado de Aiven.</strong> En el panel abra el servicio <code>citas-datos</code> → <em>Environment</em> → <em>Secret Files</em> → <em>Add Secret File</em>. En <em>Filename</em> escriba <code>ca.pem</code>, y en <em>Contents</em> abra su <code>ca.pem</code> con VS Code y pegue <strong>todo</strong> el contenido, desde <code>-----BEGIN CERTIFICATE-----</code> hasta <code>-----END CERTIFICATE-----</code>. Guarde. Render lo pondrá en <code>/etc/secrets/ca.pem</code>, la ruta que ya está configurada.</li>
+<li><strong>Revise las URLs reales.</strong> Cada servicio muestra su dirección arriba, debajo del nombre. Si Render agregó letras al final porque el nombre estaba ocupado (por ejemplo <code>citas-datos-x7k2.onrender.com</code>), corrija estas variables en la pestaña <em>Environment</em> de cada servicio:
+<div class="table-wrap"><table>
+<thead><tr><th>Servicio</th><th>Variable</th><th>Valor correcto</th></tr></thead>
+<tbody>
+<tr><td><code>citas-negocio</code></td><td><code>API_DATA</code></td><td><code>https://URL-REAL-DE-DATOS/api</code></td></tr>
+<tr><td><code>citas-medicas</code></td><td><code>BUSINESS_URL</code></td><td><code>https://URL-REAL-DE-NEGOCIO</code> (sin <code>/api</code> y sin <code>/</code> al final)</td></tr>
+</tbody></table></div>
+Al guardar una variable, Render vuelve a desplegar ese servicio automáticamente.</li>
+<li><strong>Espere a que los tres digan «Live»</strong> (en verde) y abra la URL del servicio <code>citas-medicas</code>, por ejemplo <code>https://citas-medicas.onrender.com</code>.</li>
+</ol>
+<div class="note"><strong>Publicar cambios en Render</strong>Cada <code>git push</code> a la rama <code>despliegue</code> hace que Render reconstruya y publique automáticamente los servicios afectados. Puede seguir el avance en la pestaña <em>Events</em> de cada servicio.</div>
+
+<!-- =================================================================== -->
+<h2 id="cloudrun">Opción C · Google Cloud Run + Aiven</h2>
+<span class="time">⏱ 60 a 90 minutos (incluye Aiven)</span>
+<p>Cloud Run ejecuta contenedores y cobra solo por el tiempo en que atienden peticiones. Su capa gratuita mensual (2 millones de peticiones) cubre de sobra un proyecto académico. A diferencia de Render, aquí usted construye las imágenes en su PC, las sube a Docker Hub y le dice a Google que las ejecute.</p>
+<div class="note warn"><strong>Requiere tarjeta</strong>Google pide una cuenta de facturación. Para no llevarse sorpresas, configure una alerta de presupuesto en el primer paso y limite cada servicio a 2 instancias (ya incluido en los comandos).</div>
+<ol class="steps">
+<li><strong>Prepare Google Cloud.</strong>
+<ul>
+<li>Entre a <a href="https://console.cloud.google.com">console.cloud.google.com</a>, cree un proyecto (selector de proyectos arriba → <em>New project</em>) llamado <code>citas-medicas</code>, y asocie una cuenta de facturación.</li>
+<li>En <em>Billing → Budgets &amp; alerts → Create budget</em>, cree un presupuesto de US$1 con alertas al 50% y al 100%.</li>
+<li>Instale <a href="https://cloud.google.com/sdk/docs/install">Google Cloud CLI</a>, cierre y vuelva a abrir VS Code, y ejecute:</li>
+</ul>
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>gcloud init     # inicia sesión y elige el proyecto citas-medicas
+gcloud services enable run.googleapis.com secretmanager.googleapis.com</code></pre></li>
+<li><strong>Cree una cuenta en <a href="https://hub.docker.com/signup">Docker Hub</a></strong>: es el «almacén» gratuito donde subirá las imágenes. Las imágenes no contienen contraseñas, porque el <code>.env</code> se crea al arrancar el contenedor.</li>
+<li><strong>Construya y suba las tres imágenes.</strong> Desde la raíz del proyecto, con Docker Desktop abierto. <code>-t</code> le pone nombre a la imagen y <code>--platform linux/amd64</code> asegura que sea compatible con los servidores de Google:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker login     # usuario y contraseña de Docker Hub
+docker build --platform linux/amd64 -f Data/Dockerfile     -t TU_USUARIO_DOCKERHUB/citas-datos:1.0 .
+docker build --platform linux/amd64 -f Business/Dockerfile -t TU_USUARIO_DOCKERHUB/citas-negocio:1.0 .
+docker build --platform linux/amd64 -t TU_USUARIO_DOCKERHUB/citas-web:1.0 ./Presentation
+docker push TU_USUARIO_DOCKERHUB/citas-datos:1.0
+docker push TU_USUARIO_DOCKERHUB/citas-negocio:1.0
+docker push TU_USUARIO_DOCKERHUB/citas-web:1.0</code></pre>
+<span class="hint">Note el punto <code>.</code> al final de los dos primeros <code>build</code>: indica que se construye desde la raíz del proyecto. Si lo omite, el comando falla.</span></li>
+<li><strong>Guarde los secretos en Secret Manager</strong>, la caja fuerte de Google, y autorice a Cloud Run a leerlos. Pegue el bloque completo, reemplazando <code>PASSWORD_AIVEN</code>:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>function Nueva-Llave {
+  $b = New-Object byte[] 32
+  [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+  ($b | ForEach-Object { $_.ToString('x2') }) -join ''
+}
+"PASSWORD_AIVEN" | gcloud secrets create db-passw --data-file=-
+gcloud secrets create aiven-ca --data-file=ca.pem
+Nueva-Llave | gcloud secrets create jwt-key --data-file=-
+$INTERNAL = Nueva-Llave
+"Guarde esta INTERNAL_KEY: $INTERNAL"
+
+$PROY = gcloud config get-value project
+$PN = gcloud projects describe $PROY --format="value(projectNumber)"
+gcloud projects add-iam-policy-binding $PROY `
+  --member="serviceAccount:$PN-compute@developer.gserviceaccount.com" `
+  --role="roles/secretmanager.secretAccessor"</code></pre>
+<span class="hint">La variable <code>$INTERNAL</code> solo existe mientras la terminal esté abierta, así que haga los pasos 5 a 7 en la misma terminal. Si la cierra, vuelva a asignarla con el valor que guardó: <code>$INTERNAL = "el-valor"</code>.</span></li>
+<li><strong>Despliegue la capa de Datos.</strong> <code>--set-env-vars</code> entrega la configuración y <code>--set-secrets</code> toma los valores de Secret Manager (el certificado queda como archivo en <code>/secrets/ca.pem</code>):
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>gcloud run deploy citas-datos --image docker.io/TU_USUARIO_DOCKERHUB/citas-datos:1.0 `
+  --region us-central1 --allow-unauthenticated --max-instances 2 `
+  --set-env-vars "DB_HOST=HOST_AIVEN,DB_PORT=PUERTO_AIVEN,DB_USER=avnadmin,DB_NAME=citas_medicas,DB_SSL=true,DB_SSL_CA=/secrets/ca.pem,INTERNAL_KEY=$INTERNAL" `
+  --set-secrets "DB_PASSW=db-passw:latest,/secrets/ca.pem=aiven-ca:latest"
+
+$DATOS = gcloud run services describe citas-datos --region us-central1 --format="value(status.url)"
+$DATOS</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver al final</span><code>Service [citas-datos] revision [citas-datos-00001-abc] has been deployed and is serving 100 percent of traffic.
+Service URL: https://citas-datos-xxxxxxxx-uc.a.run.app</code></pre></li>
+<li><strong>Despliegue la capa de Negocio</strong>, indicándole dónde está Datos:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>gcloud run deploy citas-negocio --image docker.io/TU_USUARIO_DOCKERHUB/citas-negocio:1.0 `
+  --region us-central1 --allow-unauthenticated --max-instances 2 `
+  --set-env-vars "API_DATA=$DATOS/api,API_TIMEOUT=30,JWT_TTL=3600,INTERNAL_KEY=$INTERNAL" `
+  --set-secrets "KEY=jwt-key:latest"
+
+$NEGOCIO = gcloud run services describe citas-negocio --region us-central1 --format="value(status.url)"</code></pre></li>
+<li><strong>Despliegue la capa de Presentación</strong>, indicándole dónde está Negocio:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>gcloud run deploy citas-web --image docker.io/TU_USUARIO_DOCKERHUB/citas-web:1.0 `
+  --region us-central1 --allow-unauthenticated --max-instances 2 `
+  --set-env-vars "BUSINESS_URL=$NEGOCIO"</code></pre>
+La <em>Service URL</em> que aparece al final (<code>https://citas-web-….run.app</code>) es la dirección de su aplicación.</li>
+</ol>
+<div class="note"><strong>Publicar cambios en Cloud Run</strong>Construya y suba la imagen con una versión nueva (por ejemplo <code>:1.1</code>) y repita el <code>gcloud run deploy</code> de esa capa con la nueva etiqueta. Las variables y secretos se conservan entre versiones.</div>
+
+<!-- =================================================================== -->
+<h2 id="azure">Opción D · Azure for Students (Container Apps) + Aiven</h2>
+<span class="time">⏱ 60 a 90 minutos (incluye Aiven)</span>
+<p>Con el correo de la universidad, Microsoft da US$100 de crédito al año sin pedir tarjeta. Container Apps tiene una ventaja: Datos y Negocio pueden ser <strong>totalmente privados</strong>. Solo la capa de Presentación tiene dirección pública, y llega a Negocio por una red interna.</p>
+<ol class="steps">
+<li><strong>Active la cuenta</strong> en <a href="https://azure.microsoft.com/free/students">azure.microsoft.com/free/students</a> con su correo <code>@ucr.ac.cr</code>.</li>
+<li><strong>Instale Azure CLI</strong> desde <a href="https://learn.microsoft.com/cli/azure/install-azure-cli-windows">learn.microsoft.com</a> y reinicie VS Code.</li>
+<li><strong>Construya y suba las imágenes a Docker Hub</strong>: es el mismo paso 3 de la opción C.</li>
+<li><strong>Prepare Azure.</strong> Un «grupo de recursos» es una carpeta que agrupa todo lo del proyecto (para borrarlo de una vez al final), y el «entorno» es la red privada donde vivirán los contenedores:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>az login
+az extension add --name containerapp --upgrade
+az provider register --namespace Microsoft.App
+az provider register --namespace Microsoft.OperationalInsights
+az group create -n rg-citas -l eastus
+az containerapp env create -n env-citas -g rg-citas -l eastus</code></pre>
+<span class="hint">El último comando tarda unos minutos.</span></li>
+<li><strong>Cree la capa de Datos</strong> con acceso <em>interno</em> (<code>--ingress internal</code>): nadie desde Internet puede llamarla. El certificado se pasa en base64 porque las variables no admiten bien saltos de línea:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>function Nueva-Llave {
+  $b = New-Object byte[] 32
+  [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+  ($b | ForEach-Object { $_.ToString('x2') }) -join ''
+}
+$INTERNAL = Nueva-Llave
+$CA = [Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\ca.pem"))
+
+az containerapp create -n citas-datos -g rg-citas --environment env-citas `
+  --image docker.io/TU_USUARIO_DOCKERHUB/citas-datos:1.0 --target-port 80 --ingress internal `
+  --min-replicas 0 --max-replicas 1 `
+  --secrets "db-passw=PASSWORD_AIVEN" "aiven-ca=$CA" "internal-key=$INTERNAL" `
+  --env-vars DB_HOST=HOST_AIVEN DB_PORT=PUERTO_AIVEN DB_USER=avnadmin DB_NAME=citas_medicas `
+             DB_SSL=true DB_PASSW=secretref:db-passw DB_SSL_CA_B64=secretref:aiven-ca `
+             INTERNAL_KEY=secretref:internal-key</code></pre>
+<span class="hint"><code>secretref:</code> indica que el valor se toma de los <code>--secrets</code> declarados arriba, en lugar de quedar visible en la configuración.</span></li>
+<li><strong>Cree la capa de Negocio</strong>, también interna. Dentro del entorno, Datos se encuentra simplemente como <code>http://citas-datos</code>:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>$JWT = Nueva-Llave
+az containerapp create -n citas-negocio -g rg-citas --environment env-citas `
+  --image docker.io/TU_USUARIO_DOCKERHUB/citas-negocio:1.0 --target-port 80 --ingress internal `
+  --min-replicas 0 --max-replicas 1 `
+  --secrets "jwt-key=$JWT" "internal-key=$INTERNAL" `
+  --env-vars API_DATA=http://citas-datos/api API_TIMEOUT=30 JWT_TTL=3600 `
+             KEY=secretref:jwt-key INTERNAL_KEY=secretref:internal-key</code></pre></li>
+<li><strong>Cree la capa de Presentación</strong>, la única con acceso <em>externo</em>, y obtenga su dirección:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>az containerapp create -n citas-web -g rg-citas --environment env-citas `
+  --image docker.io/TU_USUARIO_DOCKERHUB/citas-web:1.0 --target-port 80 --ingress external `
+  --min-replicas 0 --max-replicas 1 `
+  --env-vars BUSINESS_URL=http://citas-negocio
+az containerapp show -n citas-web -g rg-citas --query properties.configuration.ingress.fqdn -o tsv</code></pre>
+El último comando imprime algo como <code>citas-web.happyfield-1234.eastus.azurecontainerapps.io</code>. Ábralo con <code>https://</code> delante.</li>
+</ol>
+<div class="note warn"><strong>Cuide el crédito</strong>Deje <code>--min-replicas 0</code> para que los contenedores se apaguen cuando nadie los usa. En el portal de Azure, <em>Cost Management</em> muestra cuánto crédito lleva usado. Al terminar el curso, borre todo con <code>az group delete -n rg-citas</code>.</div>
+
+<!-- =================================================================== -->
+<h2 id="admin">Crear el usuario administrador</h2>
+<span class="time">⏱ 10 minutos</span>
+<p><code>db_dump/scripts.sql</code> crea los roles y las especialidades, pero ningún usuario, así que nadie puede iniciar sesión todavía. Las contraseñas no se guardan tal cual: se guarda un <strong>hash</strong>, una versión transformada que no se puede revertir. Por eso primero hay que generar el hash.</p>
+<ol class="steps">
+<li><strong>Genere el hash</strong> de la contraseña que quiere usar. Un contenedor temporal de PHP ejecuta <code>password_hash</code>, la misma función que usa su aplicación:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker run --rm php:8.5-cli php -r "echo password_hash('MiClaveSegura!', PASSWORD_DEFAULT), PHP_EOL;"</code></pre>
+<pre class="output has-lbl"><span class="lbl out">Lo que debería ver (el suyo será distinto)</span><code>$2y$12$Vx9Qk3....................................</code></pre>
+Copie el hash completo; empieza con <code>$2y$</code>.</li>
+<li><strong>Abra una consola de MySQL</strong> según su opción:
+<ul>
+<li><strong>Opción A (o prueba local):</strong> en la VM (o en su PC):
+<pre class="has-lbl"><span class="lbl vm">Servidor (VM) · Ubuntu</span><code>docker exec -it base_datos sh -c 'mysql -uroot -p"$(cat /run/secrets/db_password)" citas_medicas'</code></pre></li>
+<li><strong>Opciones B, C y D (Aiven):</strong> desde la raíz del proyecto en su PC:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>docker run --rm -it -v "${PWD}\ca.pem:/ca.pem" mysql:8.4 `
+  mysql -h HOST_AIVEN -P PUERTO_AIVEN -u avnadmin -p"PASSWORD_AIVEN" --ssl-mode=VERIFY_CA --ssl-ca=/ca.pem citas_medicas</code></pre></li>
+</ul>
+Sabrá que entró porque la línea de comandos cambia a <code>mysql&gt;</code>.</li>
+<li><strong>Inserte el usuario</strong> (rol 1 = Administrador), pegando su hash entre las comillas simples:
+<pre class="has-lbl"><span class="lbl sql">SQL · dentro de mysql&gt;</span><code>INSERT INTO usuarios (username, password, rol_id, activo)
+VALUES ('admin', 'PEGUE_AQUI_EL_HASH', 1, 1);
+SELECT id, username, rol_id FROM usuarios;
+exit</code></pre>
+<span class="hint">Si su aplicación además necesita un registro en la tabla <code>administradores</code> vinculado al usuario, agréguelo con el <code>id</code> que mostró el <code>SELECT</code>.</span></li>
+<li><strong>Inicie sesión</strong> en la aplicación con <code>admin</code> y la contraseña que eligió.</li>
+</ol>
+
+<!-- =================================================================== -->
+<h2 id="verificar">Comprobar que todo funciona</h2>
+<p>Además de probar en el navegador, puede verificar cada capa con <code>curl</code>, que hace peticiones HTTP desde la terminal. En PowerShell se escribe <code>curl.exe</code> para no confundirlo con otro comando de PowerShell que se llama igual.</p>
+<p>Reemplace <code>APP</code> por la dirección de su aplicación sin <code>https://</code> (por ejemplo <code>152-70-12-34.sslip.io</code>) y <code>DATOS</code> por la de la capa de Datos (solo en las opciones B y C):</p>
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>curl.exe -I https://APP/                 # 1) la página carga
+curl.exe -I https://APP/login            # 2) las rutas de Angular funcionan
+curl.exe -i https://APP/api/medicos      # 3) Negocio responde a través de Nginx
+curl.exe -i -X POST https://APP/api/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"MiClaveSegura!\"}"   # 4) login completo
+curl.exe -i https://DATOS/api/medicos    # 5) Datos rechaza peticiones directas</code></pre>
+<div class="table-wrap"><table>
+<thead><tr><th>Prueba</th><th>Resultado correcto</th><th>Qué demuestra</th></tr></thead>
+<tbody>
+<tr><td>1 y 2</td><td><code>HTTP/1.1 200 OK</code></td><td>Nginx sirve Angular, y las rutas internas no dan 404.</td></tr>
+<tr><td>3</td><td><code>401 Unauthorized</code> con «Token inválido o ausente»</td><td>Nginx llega a Negocio, y Negocio exige el token JWT. ¡Un 401 aquí es bueno!</td></tr>
+<tr><td>4</td><td><code>200 OK</code> con un <code>token</code> en la respuesta</td><td>Las cuatro capas se comunican de punta a punta.</td></tr>
+<tr><td>5</td><td><code>403 Forbidden</code></td><td>Nadie puede saltarse la capa de Negocio.</td></tr>
+</tbody></table></div>
+<details class="more"><summary>¿Qué significan los códigos HTTP más comunes?</summary><div>
+<ul>
+<li><strong>200 OK</strong>: todo bien.</li>
+<li><strong>401 Unauthorized</strong>: falta el token o no es válido (no ha iniciado sesión).</li>
+<li><strong>403 Forbidden</strong>: el servidor entendió la petición, pero no la permite.</li>
+<li><strong>404 Not Found</strong>: la ruta no existe.</li>
+<li><strong>500 Internal Server Error</strong>: el programa falló; revise los logs de Negocio o Datos.</li>
+<li><strong>502 Bad Gateway</strong>: Nginx no pudo comunicarse con Negocio (mal configurado o apagado).</li>
+<li><strong>504 Gateway Timeout</strong>: Negocio tardó demasiado en responder (por ejemplo, despertando en Render).</li>
+</ul>
+</div></details>
+
+<!-- =================================================================== -->
+<h2 id="movil">Conectar la app Android al servidor publicado</h2>
+<p>La app de Android usa su propio archivo de configuración, <code>environment.android.ts</code>, que hoy apunta a <code>http://10.0.2.2:9090/api</code> (su PC vista desde el emulador). Para que use el servidor de Internet:</p>
+<ol class="steps">
+<li><strong>Cambie la dirección</strong> en <code>Presentation/src/environments/environment.android.ts</code> por la de su aplicación publicada, terminada en <code>/api</code>:
+<pre class="has-lbl"><span class="lbl pc">environment.android.ts</span><code>export const environment = {
+    servidor: 'https://SU-DIRECCION-PUBLICA/api'
+};</code></pre></li>
+<li><strong>Vuelva a compilar la app</strong>:
+<pre class="has-lbl"><span class="lbl pc">Su PC · PowerShell</span><code>cd Presentation
+pnpm run android     # compila Angular, sincroniza Capacitor y abre Android Studio</code></pre>
+En Android Studio, ejecútela en el emulador o en su teléfono. Ahora funciona con cualquier conexión a Internet, ya no solo en su red Wi-Fi.</li>
+</ol>
+<p>No necesita cambiar nada más: el origen que usa la app (<code>http://localhost</code>) ya está permitido en la variable <code>CORS_ALLOWED_ORIGINS</code> de Negocio.</p>
+
+<!-- =================================================================== -->
+<h2 id="logs">Leer los logs (lo primero cuando algo falla)</h2>
+<p>Los logs son los mensajes que escribe cada contenedor. Casi siempre dicen exactamente qué salió mal. Cuando algo falle, busque líneas con <code>ERROR</code>, <code>Fatal</code>, <code>Exception</code> o <code>denied</code>.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Dónde</th><th>Cómo ver los logs</th></tr></thead>
+<tbody>
+<tr><td>Opción A / prueba local</td><td><code>docker compose -f docker-compose.prod.yml logs --tail 50 webdatos</code> (cambie <code>webdatos</code> por <code>webnegocio</code>, <code>webpresentacion</code>, <code>db</code> o <code>proxy</code>)</td></tr>
+<tr><td>Render</td><td>Abra el servicio → pestaña <em>Logs</em>. Para errores de construcción: <em>Events</em> → el deploy fallido.</td></tr>
+<tr><td>Cloud Run</td><td><code>gcloud run services logs read citas-datos --region us-central1 --limit 50</code>, o en la consola: Cloud Run → servicio → <em>Logs</em>.</td></tr>
+<tr><td>Azure</td><td><code>az containerapp logs show -n citas-datos -g rg-citas --tail 50</code></td></tr>
+</tbody></table></div>
+<p>Al arrancar, cada capa escribe una línea que confirma su configuración y ayuda a detectar errores:</p>
+<pre class="output has-lbl"><span class="lbl out">Ejemplo de logs sanos</span><code>[datos] API protegida con X-Internal-Key
+[datos] Escuchando en el puerto 80; BD: db:3306/citas_medicas
+[negocio] Escuchando en el puerto 80; capa de datos: http://webdatos/api</code></pre>
+
+<!-- =================================================================== -->
+<h2 id="problemas-comunes">Problemas comunes y cómo resolverlos</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Lo que ve</th><th>Qué significa</th><th>Cómo resolverlo</th></tr></thead>
+<tbody>
+<tr><td><code>failed to connect to the docker API</code></td><td>Docker Desktop está cerrado.</td><td>Ábralo, espere a que la ballena quede quieta y repita el comando.</td></tr>
+<tr><td><code>Port 80 is already allocated</code></td><td>Otro programa o contenedor usa el puerto 80.</td><td><code>docker ps</code> para encontrarlo y <code>docker stop NOMBRE</code>; o cierre IIS, XAMPP o Skype.</td></tr>
+<tr><td><code>UNPROTECTED PRIVATE KEY FILE</code> al usar SSH</td><td>La llave tiene permisos demasiado abiertos.</td><td>Ejecute los comandos <code>icacls</code> de A.3.</td></tr>
+<tr><td>SSH se queda esperando y termina con <code>Connection timed out</code></td><td>IP equivocada, o la VM no está en estado Running.</td><td>Verifique la IP y el estado en la consola de Oracle.</td></tr>
+<tr><td>La página no carga en la VM (el navegador espera y falla)</td><td>Puertos 80/443 cerrados.</td><td>Revise la Security List (A.2) y las reglas de iptables (A.3).</td></tr>
+<tr><td><code>Out of capacity</code> en Oracle</td><td>No hay máquinas ARM libres en su región en este momento.</td><td>Reintente más tarde, o use 1 OCPU y 6 GB.</td></tr>
+<tr><td>Página de error <code>502 Bad Gateway</code></td><td>Nginx no logra hablar con Negocio.</td><td>Revise <code>BUSINESS_URL</code>: debe ir sin <code>/api</code> y sin <code>/</code> final. En Render, espere a que Negocio despierte.</td></tr>
+<tr><td>Login falla con error 500 y el log de Datos dice «No fue posible conectar con la base de datos»</td><td>Datos de conexión de MySQL incorrectos.</td><td>Verifique <code>DB_HOST</code>, <code>DB_PORT</code> y <code>DB_PASSW</code>. Con Aiven, <code>DB_SSL=true</code> y el <code>ca.pem</code> deben estar configurados.</td></tr>
+<tr><td>El log de Negocio muestra respuestas 403 de Datos</td><td>Las <code>INTERNAL_KEY</code> de Negocio y Datos no coinciden.</td><td>Ponga exactamente el mismo valor en ambas capas.</td></tr>
+<tr><td><code>cURL error 28: Operation timed out</code></td><td>Datos tardó en responder (dormido en Render).</td><td>Reintente; si se repite, suba <code>API_TIMEOUT</code>.</td></tr>
+<tr><td>Tiene que iniciar sesión de nuevo cada vez que reinicia</td><td>No definió <code>KEY</code> o <code>JWT_KEY</code>, así que se genera una llave nueva en cada arranque.</td><td>Defina una llave fija en el hosting o en <code>.env.prod</code>.</td></tr>
+<tr><td>El build falla en <code>pnpm install --frozen-lockfile</code></td><td><code>pnpm-lock.yaml</code> no coincide con <code>package.json</code>.</td><td>En <code>Presentation</code>, ejecute <code>pnpm install</code>, haga commit del lockfile y vuelva a intentar.</td></tr>
+<tr><td><code>/bin/sh^M: bad interpreter</code> o <code>exec format error</code></td><td>Saltos de línea de Windows (CRLF) en un <code>.sh</code>, o imagen de otra arquitectura.</td><td>Los Dockerfiles ya corrigen el CRLF. Para Cloud Run y Azure, construya con <code>--platform linux/amd64</code>.</td></tr>
+<tr><td>Caddy no obtiene el certificado</td><td>El dominio no apunta a la VM o los puertos están cerrados.</td><td>Revise <code>DOMAIN</code> en <code>.env.prod</code> y los puertos. Luego: <code>docker compose -f docker-compose.prod.yml restart proxy</code>.</td></tr>
+<tr><td>Las tablas no existen en la VM</td><td>El volumen de MySQL ya existía antes, así que no se ejecutó <code>scripts.sql</code>.</td><td>Respalde y use <code>down -v</code>, o importe el script a mano.</td></tr>
+</tbody></table></div>
+
+<!-- =================================================================== -->
+<h2 id="seguridad">Checklist de seguridad antes de compartir el enlace</h2>
+<ul class="checklist">
+<li>Usó una <code>KEY</code>/<code>JWT_KEY</code> nueva y aleatoria, no la de <code>Business/.env</code>.</li>
+<li>La <code>INTERNAL_KEY</code> es la misma en Negocio y en Datos, y es aleatoria.</li>
+<li>La contraseña de MySQL es nueva (nunca <code>12345</code>).</li>
+<li><code>.env.prod</code>, <code>ca.pem</code>, los tokens y la llave SSH no están en GitHub (revise con <code>git status</code> antes de cada commit).</li>
+<li>La prueba 5 de <a href="#verificar">Comprobar que todo funciona</a> devuelve 403 (solo opciones B y C).</li>
+<li>El sitio abre con <code>https://</code> y muestra el candado.</li>
+<li>Configuró una alerta de presupuesto (Cloud Run) o revisa el consumo de crédito (Azure).</li>
+<li>Tiene un respaldo reciente de la base de datos.</li>
+<li>Pendiente para más adelante: desactivar los detalles de error en producción. Hoy <code>addErrorMiddleware(true, …)</code> en <code>App.php</code> muestra detalles técnicos cuando algo falla.</li>
+</ul>
+
+<!-- =================================================================== -->
+<h2 id="anexo">Anexo · Contenido de los archivos nuevos</h2>
+<p>Este es el contenido completo de <code>despliegue/sobrescribir/</code>, para que la guía funcione aunque se comparta sola. Cada archivo indica dónde va dentro del proyecto. Haga clic para expandirlo.</p>
+<details class="file"><summary>Business/Dockerfile<span class="dest">→ ./Business/Dockerfile</span></summary><pre><code># ==========================================================================
+#  Capa de NEGOCIO (Slim + JWT) - Dockerfile apto para producción
+#  Contexto de build: raíz del repositorio  -&gt;  docker build -f Business/Dockerfile .
+# ==========================================================================
+FROM php:8.5-apache
+
+WORKDIR /var/www/html
+
+RUN a2enmod rewrite actions headers
+
+RUN apt-get update \
+    &amp;&amp; apt-get install -y --no-install-recommends git unzip \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# Composer oficial (evita el hash fijo del instalador, que se rompe cuando cambia)
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+# 1 = instala dependencias de desarrollo (phpunit). En producción dejar en 0.
+#     Local:  docker compose build --build-arg COMPOSER_DEV=1 webnegocio
+ARG COMPOSER_DEV=0
+
+COPY ./Business/composer.json ./Business/composer.lock ./
+RUN if [ "$COMPOSER_DEV" = "1" ]; then \
+        composer install --no-interaction --prefer-dist --no-autoloader; \
+    else \
+        composer install --no-dev --no-interaction --prefer-dist --no-autoloader; \
+    fi
+
+# El código se COPIA dentro de la imagen (en producción no hay volúmenes)
+COPY ./Business/public ./public
+COPY ./Business/src ./src
+COPY ./Business/tests ./tests
+COPY ./Business/phpunit.xml ./
+
+RUN if [ "$COMPOSER_DEV" = "1" ]; then composer dump-autoload --optimize; \
+    else composer dump-autoload --optimize --no-dev; fi
+
+RUN sed -i 's#DocumentRoot.*$#DocumentRoot /var/www/html/public#' /etc/apache2/sites-enabled/000-default.conf
+
+# El .env NO se copia: se genera al arrancar a partir de variables de entorno
+COPY ./Business/docker-entrypoint.sh /usr/local/bin/app-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/app-entrypoint &amp;&amp; chmod +x /usr/local/bin/app-entrypoint
+
+# Render / Cloud Run / Azure inyectan PORT; en Docker Compose se usa 80
+ENV PORT=80
+EXPOSE 80
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["apache2-foreground"]
+</code></pre></details>
+<details class="file"><summary>Business/docker-entrypoint.sh<span class="dest">→ ./Business/docker-entrypoint.sh</span></summary><pre><code>#!/bin/sh
+# ==========================================================================
+#  Entrypoint de la capa de NEGOCIO
+#  - Ajusta el puerto de Apache a $PORT (los PaaS lo asignan dinámicamente)
+#  - Genera /var/www/html/.env a partir de variables de entorno
+#    (así los secretos no quedan dentro de la imagen ni en el repositorio)
+# ==========================================================================
+set -e
+
+PORT="${PORT:-80}"
+sed -ri "s/^Listen [0-9]+/Listen ${PORT}/" /etc/apache2/ports.conf
+sed -ri "s/&lt;VirtualHost \*:[0-9]+&gt;/&lt;VirtualHost *:${PORT}&gt;/" /etc/apache2/sites-enabled/000-default.conf
+
+# Permite pasar la llave por archivo (Docker secrets): KEY_FILE=/run/secrets/jwt_key
+if [ -z "$KEY" ] &amp;&amp; [ -n "$KEY_FILE" ] &amp;&amp; [ -f "$KEY_FILE" ]; then
+    KEY="$(tr -d '\r\n' &lt; "$KEY_FILE")"
+fi
+# Quita saltos de línea que algunos gestores de secretos agregan al final
+KEY="$(printf '%s' "$KEY" | tr -d '\r\n')"
+INTERNAL_KEY="$(printf '%s' "$INTERNAL_KEY" | tr -d '\r\n')"
+if [ -z "$KEY" ]; then
+    KEY="$(head -c 48 /dev/urandom | base64 | tr -d '\n=+/')"
+    echo "[negocio] AVISO: no se definió KEY; se generó una llave temporal." &gt;&amp;2
+    echo "[negocio]        Los tokens dejarán de ser válidos al reiniciar el contenedor." &gt;&amp;2
+fi
+
+ENV_FILE=/var/www/html/.env
+{
+    echo "KEY='${KEY}'"
+    echo "API_DATA='${API_DATA:-http://webdatos/api}'"
+    echo "API_TIMEOUT='${API_TIMEOUT:-5}'"
+    echo "JWT_TTL='${JWT_TTL:-3600}'"
+    [ -n "$CORS_ALLOWED_ORIGINS" ] &amp;&amp; echo "CORS_ALLOWED_ORIGINS='${CORS_ALLOWED_ORIGINS}'"
+    [ -n "$INTERNAL_KEY" ] &amp;&amp; echo "INTERNAL_KEY='${INTERNAL_KEY}'"
+    true
+} &gt; "$ENV_FILE"
+chown www-data:www-data "$ENV_FILE"
+chmod 640 "$ENV_FILE"
+
+echo "[negocio] Escuchando en el puerto ${PORT}; capa de datos: ${API_DATA:-http://webdatos/api}"
+exec docker-php-entrypoint "$@"
+</code></pre></details>
+<details class="file"><summary>Business/src/Services/DataService.php<span class="dest">→ ./Business/src/Services/DataService.php</span></summary><pre><code>&lt;?php
+namespace App\Services;
+
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Client;
+use Psr\Http\Message\ResponseInterface;
+
+/**
+ * Cliente HTTP hacia la capa de DATOS.
+ *
+ * Cambio para despliegue: si existe INTERNAL_KEY en el .env, se envía en la
+ * cabecera X-Internal-Key. La capa de datos (cuando también tiene INTERNAL_KEY)
+ * rechaza con 403 cualquier petición que no la traiga, de modo que aunque el
+ * hosting obligue a que la capa de datos tenga URL pública, solo la capa de
+ * negocio puede consumirla. Sin INTERNAL_KEY se comporta igual que antes.
+ */
+final class DataService {
+    private ClientInterface $client;
+    public function __construct(object $config) {
+        $headers = ['Accept' =&gt; 'application/json'];
+        $internalKey = $_ENV['INTERNAL_KEY'] ?? '';
+        if ($internalKey !== '') {
+            $headers['X-Internal-Key'] = $internalKey;
+        }
+
+        $this-&gt;client = new Client([
+            'base_uri' =&gt; rtrim($config-&gt;api_data, '/') . '/',
+            'timeout' =&gt; $config-&gt;timeout,
+            'connect_timeout' =&gt; $config-&gt;timeout,
+            'http_errors' =&gt; false,
+            'headers' =&gt; $headers
+        ]);
+    }
+    public function get(string $path, array $query = []): ResponseInterface {
+        return $this-&gt;client-&gt;request('GET', ltrim($path, '/'),
+            ['query' =&gt; $query]);
+    }
+    public function post(string $path, string $body): ResponseInterface {
+        return $this-&gt;client-&gt;request('POST', ltrim($path, '/'),
+            ['body' =&gt; $body,
+             'headers' =&gt; ['Content-Type' =&gt; 'application/json']
+             ]);
+    }
+    public function put(string $path, string $body): ResponseInterface {
+        return $this-&gt;client-&gt;request('PUT', ltrim($path, '/'),
+            ['body' =&gt; $body,
+             'headers' =&gt; ['Content-Type' =&gt; 'application/json']
+             ]);
+    }
+    public function delete(string $path): ResponseInterface {
+        return $this-&gt;client-&gt;request('DELETE', ltrim($path, '/'));
+    }
+}
+</code></pre></details>
+<details class="file"><summary>Data/Dockerfile<span class="dest">→ ./Data/Dockerfile</span></summary><pre><code># ==========================================================================
+#  Capa de DATOS (Slim + PDO/Eloquent) - Dockerfile apto para producción
+#  Contexto de build: raíz del repositorio  -&gt;  docker build -f Data/Dockerfile .
+# ==========================================================================
+FROM php:8.5-apache
+
+WORKDIR /var/www/html
+
+RUN a2enmod rewrite actions headers
+RUN docker-php-ext-install pdo pdo_mysql mysqli
+
+RUN apt-get update \
+    &amp;&amp; apt-get install -y --no-install-recommends git unzip ca-certificates \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+COPY ./Data/composer.json ./
+RUN composer install --no-dev --no-interaction --prefer-dist --no-autoloader
+
+COPY ./Data/public ./public
+COPY ./Data/src ./src
+
+RUN composer dump-autoload --optimize --no-dev
+
+RUN sed -i 's#DocumentRoot.*$#DocumentRoot /var/www/html/public#' /etc/apache2/sites-enabled/000-default.conf
+
+COPY ./Data/docker-entrypoint.sh /usr/local/bin/app-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/app-entrypoint &amp;&amp; chmod +x /usr/local/bin/app-entrypoint
+
+ENV PORT=80
+EXPOSE 80
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["apache2-foreground"]
+</code></pre></details>
+<details class="file"><summary>Data/docker-entrypoint.sh<span class="dest">→ ./Data/docker-entrypoint.sh</span></summary><pre><code>#!/bin/sh
+# ==========================================================================
+#  Entrypoint de la capa de DATOS
+#  - Ajusta el puerto de Apache a $PORT
+#  - Lee la contraseña de BD desde DB_PASSW o desde DB_PASSWORD_FILE (secret)
+#  - Escribe el certificado CA de la BD si viene en DB_SSL_CA_PEM
+#  - Genera /var/www/html/.env
+#  - Si INTERNAL_KEY está definida, Apache solo atiende peticiones que traigan
+#    la cabecera X-Internal-Key correcta (la envía la capa de negocio)
+# ==========================================================================
+set -e
+
+PORT="${PORT:-80}"
+sed -ri "s/^Listen [0-9]+/Listen ${PORT}/" /etc/apache2/ports.conf
+sed -ri "s/&lt;VirtualHost \*:[0-9]+&gt;/&lt;VirtualHost *:${PORT}&gt;/" /etc/apache2/sites-enabled/000-default.conf
+
+# --- Contraseña de la base de datos -------------------------------------
+if [ -z "$DB_PASSW" ] &amp;&amp; [ -n "$DB_PASSWORD_FILE" ] &amp;&amp; [ -f "$DB_PASSWORD_FILE" ]; then
+    DB_PASSW="$(tr -d '\r\n' &lt; "$DB_PASSWORD_FILE")"
+fi
+# Quita saltos de línea que algunos gestores de secretos agregan al final
+DB_PASSW="$(printf '%s' "$DB_PASSW" | tr -d '\r\n')"
+INTERNAL_KEY="$(printf '%s' "$INTERNAL_KEY" | tr -d '\r\n')"
+
+# --- Certificado CA del proveedor de BD (Aiven, Azure, etc.) ------------
+#  DB_SSL_CA      -&gt; ruta a un archivo .pem ya montado (Render, Cloud Run)
+#  DB_SSL_CA_PEM  -&gt; contenido PEM en la variable
+#  DB_SSL_CA_B64  -&gt; contenido PEM en base64 (útil en Azure / PowerShell)
+CA_FILE=/usr/local/share/db-ca.pem
+if [ -n "$DB_SSL_CA_B64" ]; then
+    printf '%s' "$DB_SSL_CA_B64" | tr -d '\r\n ' | base64 -d &gt; "$CA_FILE"
+    DB_SSL_CA="$CA_FILE"
+    DB_SSL="${DB_SSL:-true}"
+elif [ -n "$DB_SSL_CA_PEM" ]; then
+    printf '%s\n' "$DB_SSL_CA_PEM" | tr -d '\r' &gt; "$CA_FILE"
+    DB_SSL_CA="$CA_FILE"
+    DB_SSL="${DB_SSL:-true}"
+fi
+
+ENV_FILE=/var/www/html/.env
+{
+    echo "DB_HOST='${DB_HOST:-db}'"
+    echo "DB_PORT='${DB_PORT:-3306}'"
+    echo "DB_USER='${DB_USER:-root}'"
+    echo "DB_PASSW='${DB_PASSW}'"
+    echo "DB_NAME='${DB_NAME:-citas_medicas}'"
+    echo "DB_SSL='${DB_SSL:-false}'"
+    [ -n "$DB_SSL_CA" ] &amp;&amp; echo "DB_SSL_CA='${DB_SSL_CA}'"
+    [ -n "$DB_SSL_VERIFY" ] &amp;&amp; echo "DB_SSL_VERIFY='${DB_SSL_VERIFY}'"
+    true
+} &gt; "$ENV_FILE"
+chown www-data:www-data "$ENV_FILE"
+chmod 640 "$ENV_FILE"
+
+# --- Protección de la capa de datos con llave interna -------------------
+CONF=/etc/apache2/conf-enabled/zz-internal-key.conf
+if [ -n "$INTERNAL_KEY" ]; then
+    case "$INTERNAL_KEY" in
+        *[!A-Za-z0-9_-]*)
+            echo "[datos] ERROR: INTERNAL_KEY solo puede tener letras, números, '_' y '-'" &gt;&amp;2
+            exit 1 ;;
+    esac
+    cat &gt; "$CONF" &lt;&lt;EOF
+# Generado por docker-entrypoint.sh: solo la capa de negocio puede consumir la API.
+# "GET /" queda libre para los health checks del hosting.
+&lt;Directory /var/www/html/public&gt;
+    Require expr "req('X-Internal-Key') == '${INTERNAL_KEY}' || %{THE_REQUEST} =~ m#^(GET|HEAD) / HTTP#"
+&lt;/Directory&gt;
+EOF
+    echo "[datos] API protegida con X-Internal-Key"
+else
+    rm -f "$CONF"
+    echo "[datos] AVISO: INTERNAL_KEY no definida; la API acepta cualquier petición." &gt;&amp;2
+fi
+
+echo "[datos] Escuchando en el puerto ${PORT}; BD: ${DB_HOST:-db}:${DB_PORT:-3306}/${DB_NAME:-citas_medicas}"
+exec docker-php-entrypoint "$@"
+</code></pre></details>
+<details class="file"><summary>Data/src/app/config.php<span class="dest">→ ./Data/src/app/config.php</span></summary><pre><code>&lt;?php
+use Psr\Container\ContainerInterface;
+
+/*
+ * Cambios para despliegue:
+ *  - DB_PORT: las BD gestionadas (Aiven, Azure...) usan puertos distintos de 3306.
+ *  - DB_SSL / DB_SSL_CA / DB_SSL_VERIFY: las BD en la nube exigen conexión TLS.
+ * Con el .env actual (sin esas variables) el comportamiento es el mismo de antes.
+ */
+$container-&gt;set('config_bd', function() {
+    return (object) [
+        'host' =&gt; $_ENV['DB_HOST'],
+        'port' =&gt; (int) ($_ENV['DB_PORT'] ?? 3306),
+        'username' =&gt; $_ENV['DB_USER'],
+        'password' =&gt; $_ENV['DB_PASSW'],
+        'database' =&gt; $_ENV['DB_NAME'],
+        'charset' =&gt;  'utf8mb4',
+        'ssl' =&gt; filter_var($_ENV['DB_SSL'] ?? false, FILTER_VALIDATE_BOOLEAN),
+        'ssl_ca' =&gt; $_ENV['DB_SSL_CA'] ?? '',
+        'ssl_verify' =&gt; isset($_ENV['DB_SSL_VERIFY'])
+            ? filter_var($_ENV['DB_SSL_VERIFY'], FILTER_VALIDATE_BOOLEAN)
+            : null,
+    ];
+});
+
+// Opciones PDO para TLS, compartidas por conexion.php y eloquent.php
+$container-&gt;set('pdo_ssl_options', function(ContainerInterface $c) {
+    $conf = $c-&gt;get('config_bd');
+    if (!$conf-&gt;ssl) {
+        return [];
+    }
+
+    // PHP &gt;= 8.4 usa Pdo\Mysql::*; las constantes PDO::MYSQL_* están obsoletas
+    $attrCa = defined('Pdo\Mysql::ATTR_SSL_CA')
+        ? \Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA;
+    $attrVerify = defined('Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT')
+        ? \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT : PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT;
+
+    $customCa = $conf-&gt;ssl_ca !== '';
+    $ca = $customCa ? $conf-&gt;ssl_ca : '/etc/ssl/certs/ca-certificates.crt';
+    // Con el CA del proveedor se verifica el certificado; sin él solo se cifra.
+    $verify = $conf-&gt;ssl_verify ?? $customCa;
+
+    return [
+        $attrCa =&gt; $ca,
+        $attrVerify =&gt; $verify,
+    ];
+});
+</code></pre></details>
+<details class="file"><summary>Data/src/app/conexion.php<span class="dest">→ ./Data/src/app/conexion.php</span></summary><pre><code>&lt;?php
+use Psr\Container\ContainerInterface;
+
+$container-&gt;set('base_datos', function(ContainerInterface $c) {
+    $conf = $c-&gt;get('config_bd');
+
+    $opc = [
+        PDO::ATTR_ERRMODE =&gt; PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE =&gt; PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES =&gt; false
+    ] + $c-&gt;get('pdo_ssl_options');
+
+    $dsn = "mysql:host={$conf-&gt;host};port={$conf-&gt;port};dbname={$conf-&gt;database};charset={$conf-&gt;charset}";
+
+    try {
+        $conexion = new PDO($dsn, $conf-&gt;username, $conf-&gt;password, $opc);
+    } catch (PDOException $e) {
+        throw new RuntimeException('No fue posible conectar con la base de datos.', 0, $e);
+    }
+
+    return $conexion;
+});
+</code></pre></details>
+<details class="file"><summary>Data/src/app/eloquent.php<span class="dest">→ ./Data/src/app/eloquent.php</span></summary><pre><code>&lt;?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Capsule\Manager as Capsule;
+use Psr\Container\ContainerInterface;
+
+$container-&gt;set('eloquent', function (ContainerInterface $c): Capsule {
+    $config = $c-&gt;get('config_bd');
+    $capsule = new Capsule();
+
+    $capsule-&gt;addConnection([
+        'driver' =&gt; 'mysql',
+        'host' =&gt; $config-&gt;host,
+        'port' =&gt; $config-&gt;port,
+        'database' =&gt; $config-&gt;database,
+        'username' =&gt; $config-&gt;username,
+        'password' =&gt; $config-&gt;password,
+        'charset' =&gt; $config-&gt;charset,
+        'collation' =&gt; 'utf8mb4_unicode_ci',
+        'prefix' =&gt; '',
+        'options' =&gt; $c-&gt;get('pdo_ssl_options'),
+    ]);
+
+    $capsule-&gt;setAsGlobal();
+    $capsule-&gt;bootEloquent();
+
+    return $capsule;
+});
+</code></pre></details>
+<details class="file"><summary>Presentation/Dockerfile<span class="dest">→ ./Presentation/Dockerfile</span></summary><pre><code># ==========================================================================
+#  Capa de PRESENTACIÓN (Angular) - build en Node, servida por Nginx
+#  Contexto de build: carpeta Presentation  -&gt;  docker build Presentation
+# ==========================================================================
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+# Usa la versión de pnpm declarada en package.json ("packageManager")
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack install &amp;&amp; pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm run build
+
+# --------------------------------------------------------------------------
+FROM nginx:1.29-alpine
+
+# Plantilla procesada por envsubst al arrancar (imagen oficial de nginx)
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /app/dist/Presentation/browser/ /usr/share/nginx/html/
+
+# PORT: puerto donde escucha nginx (los PaaS lo inyectan).
+# BUSINESS_URL: URL base de la capa de negocio SIN /api y SIN "/" final.
+#   Docker Compose -&gt; http://webnegocio
+#   Render         -&gt; https://citas-negocio.onrender.com
+ENV PORT=80 \
+    BUSINESS_URL=http://webnegocio \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+
+EXPOSE 80
+</code></pre></details>
+<details class="file"><summary>Presentation/.dockerignore<span class="dest">→ ./Presentation/.dockerignore</span></summary><pre><code>node_modules
+dist
+.angular
+.git
+.github
+.vscode
+android
+pruebamovil
+coverage
+*.log
+</code></pre></details>
+<details class="file"><summary>Presentation/nginx/default.conf.template<span class="dest">→ ./Presentation/nginx/default.conf.template</span></summary><pre><code># ==========================================================================
+#  Nginx de la capa de PRESENTACIÓN
+#  - Sirve la SPA de Angular
+#  - Reenvía /api/* a la capa de NEGOCIO (reverse proxy). Así el navegador
+#    solo habla con un dominio: no hay CORS ni "mixed content", y la URL de
+#    negocio se cambia con una variable de entorno sin recompilar Angular.
+#  ${PORT}, ${BUSINESS_URL} y ${NGINX_LOCAL_RESOLVERS} los reemplaza envsubst.
+# ==========================================================================
+server {
+    listen ${PORT};
+    listen [::]:${PORT};
+    server_name _;
+
+    root  /usr/share/nginx/html;
+    index index.html;
+
+    # DNS dinámico: la IP de la capa de negocio puede cambiar en el hosting
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=30s ipv6=off;
+    set $business ${BUSINESS_URL};
+
+    location /api/ {
+        proxy_pass $business;
+        proxy_http_version 1.1;
+        proxy_ssl_server_name on;
+        proxy_set_header Host              $proxy_host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 75s;
+        proxy_read_timeout    90s;
+    }
+
+    # Archivos con hash de Angular: caché larga
+    location ~* \.(?:js|css|woff2?|ttf|svg|png|jpg|jpeg|gif|ico|webp)$ {
+        try_files $uri =404;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Rutas del router de Angular -&gt; index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript image/svg+xml;
+}
+</code></pre></details>
+<details class="file"><summary>Presentation/src/environments/environment.ts<span class="dest">→ ./Presentation/src/environments/environment.ts</span></summary><pre><code>// Build de producción (ng build). La SPA llama a /api en su MISMO dominio y
+// nginx (nginx/default.conf.template) lo reenvía a la capa de negocio.
+// - ng serve sigue usando environment.development.ts (http://localhost:9090/api)
+// - Android sigue usando environment.android.ts
+export const environment = {
+    servidor: '/api'
+};
+</code></pre></details>
+<details class="file"><summary>.dockerignore<span class="dest">→ ./.dockerignore</span></summary><pre><code># Contexto de build de Business/ y Data/ (raíz del repositorio)
+.git
+.github
+.vscode
+mysql
+db_dump
+despliegue
+Presentation
+Presentationxx
+**/vendor
+**/node_modules
+**/RestRequest
+**/.env
+db_password.txt
+.env.prod
+*.pdf
+</code></pre></details>
+<details class="file"><summary>docker-compose.prod.yml<span class="dest">→ ./docker-compose.prod.yml</span></summary><pre><code># ==========================================================================
+#  Citas Médicas - despliegue de PRODUCCIÓN en una VM (Oracle Cloud, GCP, ...)
+#
+#  Uso:
+#    cp .env.prod.example .env.prod      # y editar los valores
+#    docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+#  Separación en capas (cada red solo une capas vecinas):
+#    Internet -&gt; proxy(Caddy) -&gt; webpresentacion -&gt; webnegocio -&gt; webdatos -&gt; db
+#              red_publica        red_presentacion   red_negocio   red_datos
+#  Solo el proxy publica puertos; ninguna otra capa es accesible desde fuera.
+# ==========================================================================
+name: citasmedicas
+
+services:
+  db:
+    image: mysql:9.7
+    container_name: base_datos
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DATABASE: citas_medicas
+    volumes:
+      - ./db_dump:/docker-entrypoint-initdb.d:ro   # solo se ejecuta con el volumen vacío
+      - mysql_data:/var/lib/mysql
+    secrets:
+      - db_password
+    networks:
+      - red_datos
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  webdatos:
+    container_name: web_datos
+    build:
+      context: .
+      dockerfile: ./Data/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_NAME: citas_medicas
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      INTERNAL_KEY: ${INTERNAL_KEY:?Defina INTERNAL_KEY en .env.prod}
+    secrets:
+      - db_password
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - red_datos
+      - red_negocio
+
+  webnegocio:
+    container_name: web_negocio
+    build:
+      context: .
+      dockerfile: ./Business/Dockerfile
+    restart: unless-stopped
+    environment:
+      KEY: ${JWT_KEY:?Defina JWT_KEY en .env.prod}
+      API_DATA: http://webdatos/api
+      API_TIMEOUT: "10"
+      JWT_TTL: ${JWT_TTL:-3600}
+      INTERNAL_KEY: ${INTERNAL_KEY}
+      # Orígenes que pueden llamar a la API directamente (app Android/Capacitor).
+      # La web no lo necesita porque pasa por el proxy de nginx (mismo dominio).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,https://localhost,capacitor://localhost}
+    depends_on:
+      - webdatos
+    networks:
+      - red_negocio
+      - red_presentacion
+
+  webpresentacion:
+    container_name: web_presentacion
+    build:
+      context: ./Presentation
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      BUSINESS_URL: http://webnegocio
+    depends_on:
+      - webnegocio
+    networks:
+      - red_presentacion
+      - red_publica
+
+  proxy:
+    image: caddy:2-alpine
+    container_name: proxy_https
+    restart: unless-stopped
+    environment:
+      # Dominio público. Con un dominio real (o &lt;ip&gt;.sslip.io) Caddy obtiene
+      # el certificado HTTPS de Let's Encrypt automáticamente.
+      # Vacío -&gt; ":80" (solo HTTP por el puerto 80).
+      DOMAIN: ${DOMAIN:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - webpresentacion
+    networks:
+      - red_publica
+
+networks:
+  red_publica:
+  red_presentacion:
+    internal: true
+  red_negocio:
+    internal: true
+  red_datos:
+    internal: true
+
+volumes:
+  mysql_data:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  db_password:
+    file: ./db_password.txt
+</code></pre></details>
+<details class="file"><summary>Caddyfile<span class="dest">→ ./Caddyfile</span></summary><pre><code># Proxy público con HTTPS automático (Let's Encrypt).
+# DOMAIN viene de .env.prod; si está vacío, compose pasa ":80" (solo HTTP).
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy webpresentacion:80
+}
+</code></pre></details>
+<details class="file"><summary>.env.prod.example<span class="dest">→ ./.env.prod.example</span></summary><pre><code># ==========================================================================
+#  Variables para docker-compose.prod.yml  -&gt;  copiar como .env.prod
+#  NO subir .env.prod al repositorio.
+#  Generar valores aleatorios:  openssl rand -hex 32
+# ==========================================================================
+
+# Llave para firmar los JWT (capa de negocio)
+JWT_KEY=cambie_esto_por_64_caracteres_hex_generados_con_openssl
+
+# Llave compartida negocio &lt;-&gt; datos (solo letras, números, _ y -)
+INTERNAL_KEY=cambie_esto_por_otra_llave_hex
+
+# Duración del token de acceso en segundos
+JWT_TTL=3600
+
+# Dominio público. Ejemplos:
+#   citas.midominio.com
+#   152-70-12-34.sslip.io     (IP pública con guiones; no requiere comprar dominio)
+#   (vacío)                   -&gt; solo HTTP en el puerto 80
+DOMAIN=
+
+# Orígenes CORS para la app móvil (Capacitor)
+CORS_ALLOWED_ORIGINS=http://localhost,https://localhost,capacitor://localhost
+</code></pre></details>
+<details class="file"><summary>render.yaml<span class="dest">→ ./render.yaml</span></summary><pre><code># ==========================================================================
+#  Blueprint de Render (https://render.com) - 3 servicios web gratuitos
+#  Va en la RAÍZ del repositorio. Render &gt; New &gt; Blueprint &gt; elegir el repo.
+#  La base de datos MySQL se aloja aparte (Aiven, plan gratuito).
+#
+#  Los nombres generan URLs https://&lt;name&gt;.onrender.com. Si un nombre ya está
+#  ocupado Render agrega un sufijo: revise las URLs reales en el panel y
+#  corrija API_DATA y BUSINESS_URL si es necesario.
+# ==========================================================================
+services:
+  # ---------------- Capa de DATOS ----------------
+  - type: web
+    name: citas-datos
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerContext: .
+    dockerfilePath: ./Data/Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: DB_HOST
+        sync: false              # host de Aiven, p.ej. mysql-xxxx.aivencloud.com
+      - key: DB_PORT
+        sync: false              # puerto de Aiven, p.ej. 12345
+      - key: DB_USER
+        value: avnadmin
+      - key: DB_PASSW
+        sync: false
+      - key: DB_NAME
+        value: citas_medicas
+      - key: DB_SSL
+        value: "true"
+      - key: DB_SSL_CA
+        value: /etc/secrets/ca.pem   # subir ca.pem de Aiven como "Secret File"
+      - key: INTERNAL_KEY
+        generateValue: true
+
+  # ---------------- Capa de NEGOCIO ----------------
+  - type: web
+    name: citas-negocio
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerContext: .
+    dockerfilePath: ./Business/Dockerfile
+    envVars:
+      - key: KEY
+        generateValue: true
+      - key: API_DATA
+        value: https://citas-datos.onrender.com/api
+      - key: API_TIMEOUT
+        value: "60"              # el plan gratis "duerme": dar tiempo al arranque en frío
+      - key: JWT_TTL
+        value: "3600"
+      - key: INTERNAL_KEY
+        fromService:
+          type: web
+          name: citas-datos
+          envVarKey: INTERNAL_KEY
+      - key: CORS_ALLOWED_ORIGINS
+        value: http://localhost,https://localhost,capacitor://localhost
+
+  # ---------------- Capa de PRESENTACIÓN ----------------
+  - type: web
+    name: citas-medicas
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerContext: ./Presentation
+    dockerfilePath: ./Presentation/Dockerfile
+    envVars:
+      - key: BUSINESS_URL
+        value: https://citas-negocio.onrender.com
+</code></pre></details>
+
+<footer>Guía para principiantes · Proyecto Citas Médicas (UCR · Desarrollo IV). Los nombres de botones, regiones y límites de los proveedores pueden cambiar; ante la duda, consulte su documentación oficial.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+  document.querySelectorAll('pre').forEach(function(pre){
+    if (pre.classList.contains('output')) return;
+    var code = pre.querySelector('code'); if(!code) return;
+    var b = document.createElement('button');
+    b.className = 'copy'; b.type = 'button'; b.textContent = 'Copiar';
+    b.addEventListener('click', function(){
+      var txt = code.textContent;
+      var done = function(){ b.textContent = 'Copiado'; setTimeout(function(){ b.textContent = 'Copiar'; }, 1400); };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(txt).then(done, function(){ fallback(txt); done(); });
+      } else { fallback(txt); done(); }
+    });
+    pre.appendChild(b);
+  });
+  function fallback(t){
+    var ta = document.createElement('textarea'); ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove();
+  }
+  document.getElementById('btnDownload').addEventListener('click', function(){
+    var clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll('button.copy').forEach(function(b){ b.remove(); });
+    clone.removeAttribute('data-theme');
+    var html = '<!doctype html>\n' + clone.outerHTML;
+    var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Guia-Despliegue-CitasMedicas-Principiantes.html';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+  var root = document.documentElement;
+  try { var t = localStorage.getItem('guia-tema'); if (t) root.setAttribute('data-theme', t); } catch(e){}
+  document.getElementById('btnTheme').addEventListener('click', function(){
+    var cur = root.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('guia-tema', next); } catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

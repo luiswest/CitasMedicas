@@ -1,0 +1,67 @@
+# Exported from Render on 2026-11-20T22:59:25Z
+version: "1"
+services:
+- type: web
+  name: citas-datos
+  runtime: docker
+  repo: https://github.com/luiswest/CitasMedicas
+  branch: despliegue
+  plan: free
+  envVars:
+  - key: DB_PASSW
+    sync: false
+  - key: DB_PORT
+    sync: false
+  - key: DB_HOST
+    sync: false
+  - key: INTERNAL_KEY
+    sync: false
+  - key: DB_SSL_CA
+    sync: false
+  - key: DB_SSL
+    sync: false
+  - key: DB_NAME
+    sync: false
+  - key: DB_USER
+    sync: false
+  region: oregon
+  healthCheckPath: /
+  dockerContext: .
+  dockerfilePath: ./Data/Dockerfile
+  autoDeployTrigger: commit
+- type: web
+  name: citas-medicas
+  runtime: docker
+  repo: https://github.com/luiswest/CitasMedicas
+  branch: despliegue
+  plan: free
+  envVars:
+  - key: BUSINESS_URL
+    sync: false
+  region: oregon
+  dockerContext: ./Presentation
+  dockerfilePath: ./Presentation/Dockerfile
+  autoDeployTrigger: commit
+- type: web
+  name: citas-negocio
+  runtime: docker
+  repo: https://github.com/luiswest/CitasMedicas
+  branch: despliegue
+  plan: free
+  envVars:
+  - key: CORS_ALLOWED_ORIGINS
+    sync: false
+  - key: INTERNAL_KEY
+    sync: false
+  - key: JWT_TTL
+    sync: false
+  - key: API_TIMEOUT
+    sync: false
+  - key: API_DATA
+    sync: false
+  - key: KEY
+    sync: false
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Business/Dockerfile
+  autoDeployTrigger: commit
